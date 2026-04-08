@@ -17,3 +17,8 @@ services:
         sync: false
       - key: YOOMONEY_WALLET
         sync: false
+    staticPublishPath: ./webapp
+    routes:
+      - type: rewrite
+        source: /webapp/*
+        destination: /webapp/index.html
