@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: djmczub-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m bot.main
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: CHANNEL_ID
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      - key: YOOMONEY_TOKEN
+        sync: false
+      - key: YOOMONEY_WALLET
+        sync: false
