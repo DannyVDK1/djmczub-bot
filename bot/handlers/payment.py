@@ -1,5 +1,6 @@
 import uuid
 import logging
+import json
 from datetime import datetime, timedelta
 
 from aiogram import Router, F
@@ -16,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 def generate_payment_url(user_id: int, plan: str, amount: int, payment_id: str) -> str:
-    """Генерируем ссылку на оплату ЮМани"""
     label = f"{user_id}_{plan}_{payment_id[:8]}"
     comment = f"Подписка DJ MC ZUB — {SUBSCRIPTION_PLANS[plan]['label']}"
     return (
@@ -30,40 +30,66 @@ def generate_payment_url(user_id: int, plan: str, amount: int, payment_id: str) 
     )
 
 
-@router.callback_query(F.data.startswith("pay_"))
-async def process_payment_callback(callback: CallbackQuery):
-    plan_key = callback.data.replace("pay_", "")
-    plan = SUBSCRIPTION_PLANS.get(plan_key)
-    if not plan:
-        await callback.answer("Неверный тариф")
+@router.message(F.web_app_data)
+async def handle_web_app_data(message: Message, bot=None):
+    """Обработчик данных из Mini App — пользователь выбрал тариф"""
+    try:
+        data = json.loads(message.web_app_data.data)
+        action = data.get("action")
+        plan_key = data.get("plan")
+    except Exception:
+        await message.answer("❌ Ошибка при обработке данных. Попробуйте ещё раз.")
         return
 
-    user_id = callback.from_user.id
+    if action != "pay" or plan_key not in SUBSCRIPTION_PLANS:
+        await message.answer("❌ Неверный тариф.")
+        return
+
+    plan = SUBSCRIPTION_PLANS[plan_key]
+    user_id = message.from_user.id
     payment_id = str(uuid.uuid4())
 
     await create_payment(user_id, plan_key, plan["price"], payment_id)
 
+    # Если кошелёк ЮМани не настроен — тестовый режим
+    if not YOOMONEY_WALLET or YOOMONEY_WALLET == "":
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="✅ Активировать (тест)",
+                callback_data=f"check_{payment_id}"
+            )]
+        ])
+        await message.answer(
+            f"🧪 <b>Тестовый режим оплаты</b>\n\n"
+            f"Тариф: <b>{plan['label']}</b>\n"
+            f"Сумма: <b>{plan['price']} ₽</b>\n\n"
+            f"ЮМани пока не подключены.\n"
+            f"Нажми кнопку чтобы активировать тестовую подписку.",
+            reply_markup=keyboard
+        )
+        return
+
     pay_url = generate_payment_url(user_id, plan_key, plan["price"], payment_id)
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"💳 Оплатить {plan['price']} ₽", url=pay_url)],
+        [InlineKeyboardButton(text=f"💳 Оплатить {plan['price']} ₽ через ЮМани", url=pay_url)],
         [InlineKeyboardButton(text="✅ Я оплатил — проверить", callback_data=f"check_{payment_id}")]
     ])
 
-    await callback.message.answer(
+    await message.answer(
         f"💳 <b>Оплата подписки</b>\n\n"
         f"Тариф: <b>{plan['label']}</b>\n"
         f"Сумма: <b>{plan['price']} ₽</b>\n\n"
-        f"1. Нажми «Оплатить» — откроется ЮМани\n"
-        f"2. После оплаты нажми «Я оплатил — проверить»\n\n"
-        f"⚠️ После оплаты нажми кнопку проверки — доступ откроется автоматически.",
+        f"1️⃣ Нажми <b>«Оплатить»</b> — откроется ЮМани\n"
+        f"2️⃣ Переведи точную сумму\n"
+        f"3️⃣ Вернись и нажми <b>«Я оплатил»</b>\n\n"
+        f"⚡ Доступ откроется автоматически после проверки.",
         reply_markup=keyboard
     )
-    await callback.answer()
 
 
 @router.callback_query(F.data.startswith("check_"))
-async def check_payment(callback: CallbackQuery, bot):
+async def check_payment(callback: CallbackQuery, bot=None):
     payment_id = callback.data.replace("check_", "")
     payment = await get_payment(payment_id)
 
@@ -72,17 +98,21 @@ async def check_payment(callback: CallbackQuery, bot):
         return
 
     if payment["status"] == "confirmed":
-        await callback.answer("Подписка уже активирована! ✅", show_alert=True)
+        await callback.answer("✅ Подписка уже активирована!", show_alert=True)
         return
 
-    # TODO: здесь будет проверка через ЮМани API
-    # Пока — заглушка для тестирования
-    await activate_subscription(callback.from_user, payment, bot)
-    await callback.answer("✅ Подписка активирована!", show_alert=True)
+    if payment["user_id"] != callback.from_user.id:
+        await callback.answer("❌ Это не ваш платёж", show_alert=True)
+        return
+
+    # TODO: здесь проверка через ЮМани API по label
+    # Пока активируем сразу (тест)
+    await activate_subscription(callback.from_user, payment, callback.bot)
+    await callback.answer("🎉 Подписка активирована!", show_alert=True)
+    await callback.message.edit_reply_markup(reply_markup=None)
 
 
 async def activate_subscription(user, payment: dict, bot):
-    """Активируем подписку и добавляем в канал"""
     plan = SUBSCRIPTION_PLANS[payment["plan"]]
     expires_at = datetime.now() + timedelta(days=plan["days"])
 
@@ -95,7 +125,6 @@ async def activate_subscription(user, payment: dict, bot):
         payment_id=payment["payment_id"]
     )
 
-    # Создаём инвайт-ссылку в канал
     try:
         invite = await bot.create_chat_invite_link(
             chat_id=CHANNEL_ID,
@@ -109,14 +138,18 @@ async def activate_subscription(user, payment: dict, bot):
 
     text = (
         f"🎉 <b>Подписка активирована!</b>\n\n"
-        f"Тариф: <b>{plan['label']}</b>\n"
-        f"Действует до: <b>{expires_at.strftime('%d.%m.%Y')}</b>\n\n"
+        f"📦 Тариф: <b>{plan['label']}</b>\n"
+        f"📅 Действует до: <b>{expires_at.strftime('%d.%m.%Y')}</b>\n\n"
     )
+
     if invite_url:
-        text += f"👇 <b>Ссылка для входа в канал:</b>\n{invite_url}\n\n"
-        text += "⚠️ Ссылка одноразовая — использовать только один раз!"
+        text += (
+            f"👇 <b>Твоя ссылка для входа в канал:</b>\n"
+            f"{invite_url}\n\n"
+            f"⚠️ Ссылка одноразовая — используй только один раз!"
+        )
     else:
-        text += "⚠️ Не удалось создать ссылку — напишите администратору."
+        text += "⚠️ Не удалось создать ссылку — напиши администратору."
 
     await bot.send_message(chat_id=user.id, text=text)
-    logger.info(f"Subscription activated for user {user.id}, plan {payment['plan']}")
+    logger.info(f"Subscription activated: user={user.id} plan={payment['plan']}")
