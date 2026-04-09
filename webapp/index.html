@@ -3,17 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>DJ MC ZUB — Закрытый канал</title>
+  <title>DJ MC ZUB</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background:#080808;
-      color:#f0f0f0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height:100vh;
-      overflow-x:hidden;
-    }
+    body { background:#080808; color:#f0f0f0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; overflow-x:hidden; }
+
     @keyframes orbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes orbitR { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
     @keyframes ringPulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.08);opacity:0.2} }
@@ -24,193 +19,136 @@
     @keyframes shimmer { 0%,100%{opacity:0.85} 50%{opacity:1} }
     @keyframes vinylSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
+    /* NAV */
     .nav {
       display:flex; align-items:center; justify-content:space-between;
-      padding:14px 20px;
-      border-bottom:0.5px solid #141414;
-      background:#080808;
-      position:sticky; top:0; z-index:10;
+      padding:14px 20px; border-bottom:0.5px solid #141414;
+      background:#080808; position:sticky; top:0; z-index:10;
     }
     .nav-left { display:flex; align-items:center; gap:10px; }
+    /* ZUB кружок — центрированный, текст крупнее */
     .nav-avatar {
-      width:36px; height:36px; border-radius:50%;
+      width:38px; height:38px; border-radius:50%;
       background:#111; border:1.5px solid #D85A30;
       display:flex; align-items:center; justify-content:center;
       flex-shrink:0;
     }
-    .nav-avatar svg { width:22px; height:22px; }
+    .nav-avatar span {
+      font-size:12px; font-weight:700; color:#D85A30;
+      letter-spacing:0.5px; line-height:1;
+      text-align:center;
+    }
     .nav-name { font-size:15px; font-weight:500; }
     .nav-sub { font-size:11px; color:#5F5E5A; }
+
+    /* ONLINE — статичный, без анимации */
     .online-badge {
       display:flex; align-items:center; gap:5px;
       background:#0a1c0a; border:0.5px solid #1D9E75;
       border-radius:20px; padding:5px 12px;
-      animation: cardFloat 2s ease-in-out infinite;
     }
-    .online-dot { width:6px; height:6px; border-radius:50%; background:#1D9E75; animation: blink 1.2s infinite; }
+    .online-dot { width:6px; height:6px; border-radius:50%; background:#1D9E75; animation:blink 1.2s infinite; }
     .online-text { font-size:11px; color:#1D9E75; font-weight:500; }
 
-    .hero {
-      display:flex; flex-direction:column; align-items:center;
-      padding:30px 20px 20px; position:relative;
-    }
+    /* HERO */
+    .hero { display:flex; flex-direction:column; align-items:center; padding:30px 20px 20px; }
     .orbit-container {
       position:relative; width:220px; height:220px;
-      display:flex; align-items:center; justify-content:center;
-      margin-bottom:10px;
+      display:flex; align-items:center; justify-content:center; margin-bottom:10px;
     }
-    .ring {
-      position:absolute; border-radius:50%; border:1px solid #D85A30; pointer-events:none;
-    }
+    .ring { position:absolute; border-radius:50%; border:1px solid #D85A30; pointer-events:none; }
     .ring-1 { width:170px; height:170px; animation:ringPulse 2.5s ease-in-out infinite; opacity:0.5; }
     .ring-2 { width:200px; height:200px; animation:ringPulse2 3s ease-in-out infinite 0.5s; opacity:0.25; border-color:#993C1D; }
-
     .orbit-wrap { position:absolute; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
 
-    /* Аватар — логотип DJ MC ZUB */
+    /* Логотип в аватаре */
     .avatar-circle {
       width:130px; height:130px; border-radius:50%;
       background:radial-gradient(circle at 40% 35%, #2a1208, #0d0d0d);
       border:2px solid #D85A30;
       display:flex; align-items:center; justify-content:center;
-      flex-direction:column; position:relative; z-index:2;
-      gap:2px;
+      flex-direction:column; position:relative; z-index:2; gap:1px;
     }
-    .avatar-dj {
-      font-size:13px; font-weight:700; color:#D85A30;
-      letter-spacing:3px; line-height:1;
-    }
-    .avatar-mc {
-      font-size:22px; font-weight:700; color:#f0f0f0;
-      letter-spacing:2px; line-height:1;
-    }
-    .avatar-zub {
-      font-size:26px; font-weight:700; color:#D85A30;
-      letter-spacing:3px; line-height:1;
-    }
-    .avatar-line {
-      width:60px; height:1px; background:#D85A30; opacity:0.5; margin:2px 0;
-    }
+    .avatar-dj { font-size:12px; font-weight:700; color:#D85A30; letter-spacing:3px; line-height:1; }
+    .avatar-line { width:55px; height:1px; background:#D85A30; opacity:0.5; margin:3px 0; }
+    .avatar-mc { font-size:20px; font-weight:700; color:#f0f0f0; letter-spacing:2px; line-height:1; }
+    .avatar-zub { font-size:28px; font-weight:700; color:#D85A30; letter-spacing:3px; line-height:1; }
 
-    .hero-name {
-      font-size:26px; font-weight:500; letter-spacing:2px;
-      text-align:center; margin-bottom:4px;
-      animation:shimmer 3s ease-in-out infinite;
-    }
+    .hero-name { font-size:26px; font-weight:500; letter-spacing:2px; text-align:center; margin-bottom:4px; animation:shimmer 3s ease-in-out infinite; }
     .hero-sub { font-size:12px; color:#444441; letter-spacing:1px; text-align:center; }
-
-    .equalizer {
-      display:flex; align-items:flex-end; gap:3px;
-      height:40px; margin:16px auto; justify-content:center;
-    }
+    .equalizer { display:flex; align-items:flex-end; gap:3px; height:40px; margin:16px auto; justify-content:center; }
     .eq-bar { width:4px; background:#D85A30; border-radius:2px; transform-origin:bottom; }
 
-    .cards-row {
-      display:flex; gap:10px; padding:0 16px 20px;
-      overflow-x:auto; padding-bottom:4px;
-    }
+    /* CARDS */
+    .cards-row { display:flex; gap:10px; padding:0 16px 20px; overflow-x:auto; }
     .cards-row::-webkit-scrollbar { display:none; }
-
-    .content-card {
-      flex-shrink:0; width:110px;
-      background:#111; border-radius:16px;
-      border:0.5px solid #1e1e1e; overflow:hidden;
-    }
+    .content-card { flex-shrink:0; width:110px; background:#111; border-radius:16px; border:0.5px solid #1e1e1e; overflow:hidden; }
     .content-card:nth-child(1) { animation:cardFloat 3s ease-in-out infinite; }
     .content-card:nth-child(2) { animation:cardFloat 3.4s ease-in-out infinite; animation-delay:-1.1s; }
     .content-card:nth-child(3) { animation:cardFloat 2.8s ease-in-out infinite; animation-delay:-0.6s; }
-
-    .card-preview {
-      height:70px; display:flex; align-items:center; justify-content:center;
-      position:relative; overflow:hidden;
-    }
+    .card-preview { height:70px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
     .card-preview.music { background:#1c1008; }
-    .card-preview.live  { background:#0d0d1c; }
-    .card-preview.blog  { background:#08100d; }
-
+    .card-preview.live { background:#0d0d1c; }
+    .card-preview.blog { background:#08100d; }
     .card-info { padding:10px; }
     .card-title { font-size:13px; font-weight:500; margin-bottom:3px; }
-    .card-desc  { font-size:10px; color:#5F5E5A; margin-bottom:3px; }
-    .card-tag   { font-size:10px; }
-    .tag-music  { color:#D85A30; }
-    .tag-live   { color:#534AB7; }
-    .tag-blog   { color:#1D9E75; }
+    .card-desc { font-size:10px; color:#5F5E5A; margin-bottom:3px; }
+    .card-tag { font-size:10px; }
+    .tag-music { color:#D85A30; } .tag-live { color:#534AB7; } .tag-blog { color:#1D9E75; }
 
-    /* Виниловая пластинка для карточки Треки */
-    .vinyl {
-      width:54px; height:54px; border-radius:50%;
-      border:2px solid #D85A30;
-      background:#0d0d0d;
-      display:flex; align-items:center; justify-content:center;
-      position:relative;
-      animation:vinylSpin 4s linear infinite;
-    }
-    .vinyl::before {
-      content:'';
-      position:absolute; width:44px; height:44px; border-radius:50%;
-      border:1px solid #1e1e1e;
-    }
-    .vinyl::after {
-      content:'';
-      position:absolute; width:32px; height:32px; border-radius:50%;
-      border:1px solid #1e1e1e;
-    }
-    .vinyl-center {
-      width:12px; height:12px; border-radius:50%;
-      background:#D85A30; z-index:2;
-      display:flex; align-items:center; justify-content:center;
-    }
+    /* Vinyl */
+    .vinyl { width:54px; height:54px; border-radius:50%; border:2px solid #D85A30; background:#0d0d0d; display:flex; align-items:center; justify-content:center; position:relative; animation:vinylSpin 4s linear infinite; }
+    .vinyl::before { content:''; position:absolute; width:42px; height:42px; border-radius:50%; border:1px solid #2a2a2a; }
+    .vinyl::after { content:''; position:absolute; width:28px; height:28px; border-radius:50%; border:1px solid #2a2a2a; }
+    .vinyl-center { width:12px; height:12px; border-radius:50%; background:#D85A30; z-index:2; display:flex; align-items:center; justify-content:center; }
     .vinyl-dot { width:4px; height:4px; border-radius:50%; background:#0d0d0d; }
 
-    /* Live card */
-    .live-pill {
-      position:absolute; top:8px; left:8px;
-      background:#D85A30; border-radius:8px; padding:2px 8px;
-      font-size:9px; color:#FAECE7; font-weight:500;
-      display:flex; align-items:center; gap:4px;
-    }
+    /* Live */
+    .live-pill { position:absolute; top:8px; left:8px; background:#D85A30; border-radius:8px; padding:2px 8px; font-size:9px; color:#FAECE7; font-weight:500; display:flex; align-items:center; gap:4px; }
     .live-pill-dot { width:5px; height:5px; border-radius:50%; background:#FAECE7; animation:blink 0.9s infinite; }
-    .play-btn {
-      width:32px; height:32px; border-radius:50%;
-      background:#26215C; border:1px solid #534AB7;
-      display:flex; align-items:center; justify-content:center;
-    }
+    .play-btn { width:32px; height:32px; border-radius:50%; background:#26215C; border:1px solid #534AB7; display:flex; align-items:center; justify-content:center; }
     .play-triangle { width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:12px solid #AFA9EC; margin-left:2px; }
 
-    /* Blog camera */
+    /* Blog */
     .camera-wrap { width:40px; height:40px; border-radius:10px; background:#085041; border:1px solid #1D9E75; display:flex; align-items:center; justify-content:center; }
     .camera-lens { width:18px; height:18px; border-radius:50%; border:2px solid #1D9E75; display:flex; align-items:center; justify-content:center; }
     .camera-dot { width:6px; height:6px; border-radius:50%; background:#1D9E75; }
 
+    /* STATS — полоски выровнены по карточкам */
     .stats {
       margin:0 16px 20px;
       background:#111; border-radius:14px; border:0.5px solid #1a1a1a;
-      display:flex;
+      display:flex; overflow:hidden;
     }
     .stat { flex:1; padding:14px 0; text-align:center; position:relative; }
-    .stat:not(:last-child)::after { content:''; position:absolute; right:0; top:20%; bottom:20%; width:0.5px; background:#1e1e1e; }
+    .stat:not(:last-child)::after {
+      content:''; position:absolute;
+      right:0; top:0; bottom:0;
+      width:0.5px; background:#1e1e1e;
+    }
     .stat-num { font-size:18px; font-weight:500; color:#D85A30; }
     .stat-label { font-size:10px; color:#444441; margin-top:2px; }
 
+    /* PLANS */
     .section-label { font-size:11px; color:#333; letter-spacing:0.8px; padding:0 20px; margin-bottom:10px; }
     .plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px; margin-bottom:16px; }
-    .plan-card { background:#111; border:0.5px solid #222; border-radius:12px; padding:12px; cursor:pointer; transition:border-color 0.2s; position:relative; }
-    .plan-card:active { opacity:0.85; }
+    .plan-card {
+      background:#111; border:0.5px solid #222; border-radius:12px; padding:12px;
+      cursor:pointer; position:relative;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
     .plan-card.featured { background:#1c1008; border:1.5px solid #D85A30; }
+    .plan-card.selected { border:1.5px solid #D85A30 !important; }
     .plan-badge { position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:#D85A30; border-radius:8px; padding:2px 10px; font-size:9px; color:#FAECE7; font-weight:500; white-space:nowrap; }
     .plan-name { font-size:11px; color:#5F5E5A; margin-bottom:4px; }
     .plan-price { font-size:18px; font-weight:500; margin-bottom:3px; }
     .plan-per { font-size:10px; color:#5F5E5A; }
     .plan-discount { font-size:10px; color:#1D9E75; }
 
+    /* CTA */
     .cta-wrap { padding:0 16px 20px; }
-    .cta-btn {
-      width:100%; background:#D85A30; border:none;
-      border-radius:16px; padding:17px;
-      font-size:16px; font-weight:500; color:#FAECE7;
-      cursor:pointer; transition:opacity 0.2s;
-      display:flex; flex-direction:column; align-items:center; gap:3px;
-    }
+    .cta-btn { width:100%; background:#D85A30; border:none; border-radius:16px; padding:17px; font-size:16px; font-weight:500; color:#FAECE7; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; -webkit-tap-highlight-color:transparent; }
     .cta-btn:active { opacity:0.85; }
     .cta-sub { font-size:12px; color:#F0997B; font-weight:400; }
     .footer-note { text-align:center; font-size:11px; color:#333; padding:0 16px 24px; }
@@ -220,11 +158,7 @@
 
 <div class="nav">
   <div class="nav-left">
-    <div class="nav-avatar">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <text x="2" y="17" font-size="11" font-weight="700" fill="#D85A30" font-family="sans-serif">ZUB</text>
-      </svg>
-    </div>
+    <div class="nav-avatar"><span>ZUB</span></div>
     <div>
       <div class="nav-name">DJ MC ZUB</div>
       <div class="nav-sub">Евгений Шестаков</div>
@@ -248,7 +182,6 @@
         <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:#993C1D;opacity:0.6;top:0;left:50%;transform:translateX(-50%)"></div>
       </div>
     </div>
-    <!-- Логотип DJ MC ZUB вместо человечка -->
     <div class="avatar-circle">
       <div class="avatar-dj">DJ</div>
       <div class="avatar-line"></div>
@@ -256,19 +189,15 @@
       <div class="avatar-zub">ZUB</div>
     </div>
   </div>
-
   <div class="hero-name">DJ MC ZUB</div>
   <div class="hero-sub">МУЗЫКА · ЛАЙВЫ · БЛОГ · ЗАКУЛИСЬЕ</div>
   <div class="equalizer" id="eq"></div>
 </div>
 
 <div class="cards-row">
-  <!-- Треки — виниловая пластинка -->
   <div class="content-card">
     <div class="card-preview music">
-      <div class="vinyl">
-        <div class="vinyl-center"><div class="vinyl-dot"></div></div>
-      </div>
+      <div class="vinyl"><div class="vinyl-center"><div class="vinyl-dot"></div></div></div>
     </div>
     <div class="card-info">
       <div class="card-title">Треки</div>
@@ -276,7 +205,6 @@
       <div class="card-tag tag-music">Эксклюзив</div>
     </div>
   </div>
-  <!-- Лайвы -->
   <div class="content-card">
     <div class="card-preview live">
       <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
@@ -288,12 +216,9 @@
       <div class="card-tag tag-live">Каждую неделю</div>
     </div>
   </div>
-  <!-- Блог -->
   <div class="content-card">
     <div class="card-preview blog">
-      <div class="camera-wrap">
-        <div class="camera-lens"><div class="camera-dot"></div></div>
-      </div>
+      <div class="camera-wrap"><div class="camera-lens"><div class="camera-dot"></div></div></div>
     </div>
     <div class="card-info">
       <div class="card-title">Блог</div>
@@ -310,26 +235,26 @@
 </div>
 
 <div class="section-label">ТАРИФЫ</div>
-<div class="plans-grid">
-  <div class="plan-card" onclick="selectPlan('1m',this)">
+<div class="plans-grid" id="plans">
+  <div class="plan-card" data-plan="1m" onclick="selectPlan(this)">
     <div class="plan-name">1 месяц</div>
     <div class="plan-price">499₽</div>
     <div class="plan-per">499 ₽/мес</div>
   </div>
-  <div class="plan-card" onclick="selectPlan('3m',this)">
+  <div class="plan-card" data-plan="3m" onclick="selectPlan(this)">
     <div class="plan-name">3 месяца</div>
     <div class="plan-price">1 197₽</div>
     <div class="plan-per">399 ₽/мес</div>
     <div class="plan-discount">−20%</div>
   </div>
-  <div class="plan-card featured" onclick="selectPlan('6m',this)">
+  <div class="plan-card featured" data-plan="6m" onclick="selectPlan(this)">
     <div class="plan-badge">Хит продаж</div>
     <div class="plan-name" style="color:#F0997B;">6 месяцев</div>
     <div class="plan-price">1 974₽</div>
     <div class="plan-per" style="color:#993C1D;">329 ₽/мес</div>
     <div class="plan-discount">−34%</div>
   </div>
-  <div class="plan-card" onclick="selectPlan('12m',this)">
+  <div class="plan-card" data-plan="12m" onclick="selectPlan(this)">
     <div class="plan-name">12 месяцев</div>
     <div class="plan-price">2 988₽</div>
     <div class="plan-per">249 ₽/мес</div>
@@ -352,11 +277,13 @@
 
   let selectedPlan = '6m';
 
-  function selectPlan(plan, el) {
-    selectedPlan = plan;
-    document.querySelectorAll('.plan-card').forEach(c => {
-      c.style.borderColor = '';
-    });
+  // Выделяем 6m по умолчанию
+  document.querySelector('[data-plan="6m"]').classList.add('selected');
+
+  function selectPlan(el) {
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPlan = el.dataset.plan;
   }
 
   function openPayment() {
@@ -365,11 +292,9 @@
 
   // Equalizer
   const eqContainer = document.getElementById('eq');
-  const barCount = 24;
   const durations = [0.7,0.55,0.85,0.65,0.9,0.6,0.75,0.5,0.8,0.68,0.58,0.72,0.62,0.88,0.53,0.77,0.64,0.92,0.71,0.57,0.83,0.61,0.74,0.54];
-  const heights = [10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
-
-  for (let i = 0; i < barCount; i++) {
+  const heights   = [10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
+  for (let i = 0; i < 24; i++) {
     const bar = document.createElement('div');
     bar.className = 'eq-bar';
     bar.style.height = heights[i] + 'px';
