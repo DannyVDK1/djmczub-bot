@@ -1,12 +1,12 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
-
 from bot.config import WEBHOOK_URL, BOT_NAME, BOT_DESCRIPTION
 from bot.database import get_subscription
 from datetime import datetime
 
 router = Router()
+WEBAPP_URL = f"{WEBHOOK_URL}/webapp/"
 
 
 @router.message(CommandStart())
@@ -28,12 +28,8 @@ async def cmd_start(message: Message):
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="🎵 Открыть приложение",
-                web_app=WebAppInfo(url=f"{WEBHOOK_URL}/webapp/")
+                web_app=WebAppInfo(url=WEBAPP_URL)
             )],
-            [InlineKeyboardButton(
-                text="📢 Перейти в канал",
-                url="https://t.me/+CHANNEL_INVITE_LINK"  # заменить на реальную ссылку
-            )]
         ])
     else:
         text = (
@@ -51,7 +47,7 @@ async def cmd_start(message: Message):
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="🎵 Открыть и подписаться",
-                web_app=WebAppInfo(url=f"{WEBHOOK_URL}/webapp/")
+                web_app=WebAppInfo(url=WEBAPP_URL)
             )]
         ])
 
