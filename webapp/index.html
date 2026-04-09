@@ -22,17 +22,17 @@
 
     .screen{display:none}.screen.active{display:block}
 
-    /* NAV */
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:.5px solid #141414;background:#080808;position:sticky;top:0;z-index:10}
     .nav-left{display:flex;align-items:center;gap:10px}
     .nav-avatar{width:36px;height:36px;border-radius:50%;background:#111;border:1.5px solid #D85A30;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#D85A30;letter-spacing:.5px}
     .nav-name{font-size:15px;font-weight:500}
     .nav-sub{font-size:11px;color:#5F5E5A}
-    .online-badge{display:flex;align-items:center;gap:5px;background:#0a1c0a;border:.5px solid #1D9E75;border-radius:20px;padding:5px 12px;animation:cardFloat 2s ease-in-out infinite}
+
+    /* ONLINE — статичный, без анимации */
+    .online-badge{display:flex;align-items:center;gap:5px;background:#0a1c0a;border:.5px solid #1D9E75;border-radius:20px;padding:5px 12px}
     .online-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
     .online-text{font-size:11px;color:#1D9E75;font-weight:500}
 
-    /* HERO */
     .hero{display:flex;flex-direction:column;align-items:center;padding:30px 20px 20px}
     .orbit-container{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
     .ring{position:absolute;border-radius:50%;border:1px solid #D85A30;pointer-events:none}
@@ -49,7 +49,6 @@
     .equalizer{display:flex;align-items:flex-end;gap:3px;height:40px;margin:16px auto;justify-content:center}
     .eq-bar{width:4px;background:#D85A30;border-radius:2px;transform-origin:bottom}
 
-    /* CARDS */
     .cards-row{display:flex;gap:10px;padding:0 16px 20px;overflow-x:auto}
     .cards-row::-webkit-scrollbar{display:none}
     .content-card{flex-shrink:0;width:110px;background:#111;border-radius:16px;border:.5px solid #1e1e1e;overflow:hidden}
@@ -78,19 +77,16 @@
     .camera-lens{width:18px;height:18px;border-radius:50%;border:2px solid #1D9E75;display:flex;align-items:center;justify-content:center}
     .camera-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75}
 
-    /* STATS */
     .stats{margin:0 16px 20px;background:#111;border-radius:14px;border:.5px solid #1a1a1a;display:flex}
     .stat{flex:1;padding:14px 0;text-align:center;position:relative}
     .stat:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:.5px;background:#1e1e1e}
     .stat-num{font-size:18px;font-weight:500;color:#D85A30}
     .stat-label{font-size:10px;color:#444441;margin-top:2px}
 
-    /* PLANS */
     .section-label{font-size:11px;color:#333;letter-spacing:.8px;padding:0 20px;margin-bottom:10px}
     .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px}
     .plan-card{background:#111;border:1.5px solid #222;border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
-    .plan-card.selected{border-color:#D85A30;background:#1c1008}
-    .plan-card.featured{border-color:#D85A30;background:#1c1008}
+    .plan-card.selected,.plan-card.featured{border-color:#D85A30;background:#1c1008}
     .plan-card:active{opacity:.85}
     .plan-badge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#D85A30;border-radius:8px;padding:2px 10px;font-size:9px;color:#FAECE7;font-weight:500;white-space:nowrap}
     .plan-name{font-size:11px;color:#5F5E5A;margin-bottom:4px}
@@ -98,7 +94,6 @@
     .plan-per{font-size:10px;color:#5F5E5A}
     .plan-discount{font-size:10px;color:#1D9E75}
 
-    /* CTA */
     .cta-wrap{padding:0 16px 20px}
     .cta-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;transition:opacity .2s;display:flex;flex-direction:column;align-items:center;gap:3px}
     .cta-btn:active{opacity:.85}
@@ -125,10 +120,9 @@
     .step-text{font-size:13px;color:#e0e0e0;line-height:1.5;padding-top:3px}
     .pay-btn-wrap{padding:20px 16px 12px}
     .pay-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;display:block;text-decoration:none;text-align:center}
-    .check-btn{width:100%;background:transparent;border:1.5px solid #D85A30;border-radius:16px;padding:14px;font-size:14px;font-weight:500;color:#D85A30;cursor:pointer;margin:0 16px 8px;width:calc(100% - 32px);display:block}
+    .check-btn{background:transparent;border:1.5px solid #D85A30;border-radius:16px;padding:14px;font-size:14px;font-weight:500;color:#D85A30;cursor:pointer;margin:0 16px 8px;width:calc(100% - 32px);display:block}
     .pay-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
 
-    /* SUCCESS */
     #screen-success{animation:fadeIn .4s ease;text-align:center;padding:60px 20px}
     .success-icon{font-size:64px;margin-bottom:20px}
     .success-title{font-size:24px;font-weight:500;margin-bottom:10px}
@@ -138,7 +132,6 @@
 </head>
 <body>
 
-<!-- ГЛАВНЫЙ ЭКРАН -->
 <div class="screen active" id="screen-home">
   <div class="nav">
     <div class="nav-left">
@@ -148,6 +141,7 @@
         <div class="nav-sub">Евгений Шестаков</div>
       </div>
     </div>
+    <!-- ONLINE статичный — убрана анимация cardFloat -->
     <div class="online-badge">
       <div class="online-dot"></div>
       <span class="online-text">ONLINE</span>
@@ -212,10 +206,11 @@
     </div>
   </div>
 
+  <!-- Статистика — участники грузятся с сервера, 15 лет статично -->
   <div class="stats">
-    <div class="stat"><div class="stat-num">1 247</div><div class="stat-label">участников</div></div>
+    <div class="stat"><div class="stat-num" id="members-count">...</div><div class="stat-label">участников</div></div>
     <div class="stat"><div class="stat-num">340+</div><div class="stat-label">постов</div></div>
-    <div class="stat"><div class="stat-num">5 лет</div><div class="stat-label">в эфире</div></div>
+    <div class="stat"><div class="stat-num">15 лет</div><div class="stat-label">в эфире</div></div>
   </div>
 
   <div class="section-label">ТАРИФЫ</div>
@@ -261,43 +256,22 @@
     <div class="back-btn" onclick="goBack()">←</div>
     <div class="pay-title">Оплата подписки</div>
   </div>
-
   <div class="pay-card">
     <div class="pay-plan-name" id="pay-plan-name">6 месяцев</div>
     <div class="pay-plan-price" id="pay-plan-price">1 974₽</div>
     <div class="pay-plan-per" id="pay-plan-per">329 ₽ / месяц</div>
     <div class="pay-divider"></div>
-    <div class="pay-row">
-      <span class="pay-row-label">Способ оплаты</span>
-      <span class="pay-row-val">ЮМани</span>
-    </div>
-    <div class="pay-row">
-      <span class="pay-row-label">Автопродление</span>
-      <span class="pay-row-val" style="color:#1D9E75">Нет</span>
-    </div>
-    <div class="pay-row" style="margin-bottom:0">
-      <span class="pay-row-label">Доступ к каналу</span>
-      <span class="pay-row-val" style="color:#1D9E75">Мгновенно</span>
-    </div>
+    <div class="pay-row"><span class="pay-row-label">Способ оплаты</span><span class="pay-row-val">ЮМани</span></div>
+    <div class="pay-row"><span class="pay-row-label">Автопродление</span><span class="pay-row-val" style="color:#1D9E75">Нет</span></div>
+    <div class="pay-row" style="margin-bottom:0"><span class="pay-row-label">Доступ к каналу</span><span class="pay-row-val" style="color:#1D9E75">Мгновенно</span></div>
   </div>
-
   <div class="pay-steps">
-    <div class="pay-step">
-      <div class="step-num">1</div>
-      <div class="step-text">Нажми <b>«Перейти к оплате»</b> — откроется ЮМани</div>
-    </div>
-    <div class="pay-step">
-      <div class="step-num">2</div>
-      <div class="step-text">Переведи точную сумму на кошелёк DJ MC ZUB</div>
-    </div>
-    <div class="pay-step">
-      <div class="step-num">3</div>
-      <div class="step-text">Вернись и нажми <b>«Я оплатил»</b> — бот пришлёт инвайт-ссылку в канал</div>
-    </div>
+    <div class="pay-step"><div class="step-num">1</div><div class="step-text">Нажми <b>«Перейти к оплате»</b> — откроется ЮМани</div></div>
+    <div class="pay-step"><div class="step-num">2</div><div class="step-text">Переведи точную сумму на кошелёк DJ MC ZUB</div></div>
+    <div class="pay-step"><div class="step-num">3</div><div class="step-text">Вернись и нажми <b>«Я оплатил»</b> — получишь ссылку в канал</div></div>
   </div>
-
   <div class="pay-btn-wrap">
-    <a id="pay-link" href="#" target="_blank" class="pay-btn" onclick="openYoomoney()">💳 Перейти к оплате</a>
+    <button class="pay-btn" onclick="openYoomoney()">💳 Перейти к оплате</button>
   </div>
   <button class="check-btn" onclick="confirmPayment()">✅ Я оплатил — получить доступ</button>
   <div class="pay-note">После нажатия бот проверит платёж и пришлёт ссылку в канал</div>
@@ -305,14 +279,14 @@
 
 <!-- ЭКРАН УСПЕХА -->
 <div class="screen" id="screen-success">
-  <div class="success-icon">🎉</div>
-  <div class="success-title">Запрос отправлен!</div>
-  <div class="success-sub">
-    Бот проверит твой платёж и пришлёт<br>
-    инвайт-ссылку в личные сообщения.<br><br>
-    Обычно это занимает меньше минуты.
+  <div style="text-align:center;padding:60px 20px;animation:fadeIn .4s ease">
+    <div style="font-size:64px;margin-bottom:20px">🎉</div>
+    <div style="font-size:24px;font-weight:500;margin-bottom:10px">Запрос отправлен!</div>
+    <div style="font-size:14px;color:#888780;line-height:1.6;margin-bottom:30px">
+      Бот проверит твой платёж и пришлёт<br>инвайт-ссылку в личные сообщения.<br><br>Обычно это занимает меньше минуты.
+    </div>
+    <button style="background:#D85A30;border:none;border-radius:16px;padding:17px 40px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer" onclick="window.Telegram.WebApp.close()">Закрыть</button>
   </div>
-  <button class="success-btn" onclick="window.Telegram.WebApp.close()">Закрыть</button>
 </div>
 
 <script>
@@ -321,16 +295,32 @@
   tg.expand();
 
   const PLANS = {
-    '1m':  { name:'1 месяц',    price:499,  per:'499 ₽ / месяц',  label:'Подписка DJ MC ZUB — 1 месяц' },
-    '3m':  { name:'3 месяца',   price:1197, per:'399 ₽ / месяц',  label:'Подписка DJ MC ZUB — 3 месяца' },
-    '6m':  { name:'6 месяцев',  price:1974, per:'329 ₽ / месяц',  label:'Подписка DJ MC ZUB — 6 месяцев' },
-    '12m': { name:'12 месяцев', price:2988, per:'249 ₽ / месяц',  label:'Подписка DJ MC ZUB — 12 месяцев' }
+    '1m':  {name:'1 месяц',    price:499,  per:'499 ₽ / месяц',  label:'Подписка DJ MC ZUB — 1 месяц'},
+    '3m':  {name:'3 месяца',   price:1197, per:'399 ₽ / месяц',  label:'Подписка DJ MC ZUB — 3 месяца'},
+    '6m':  {name:'6 месяцев',  price:1974, per:'329 ₽ / месяц',  label:'Подписка DJ MC ZUB — 6 месяцев'},
+    '12m': {name:'12 месяцев', price:2988, per:'249 ₽ / месяц',  label:'Подписка DJ MC ZUB — 12 месяцев'}
   };
 
-  // Получаем ID пользователя из Telegram
   const userId = tg.initDataUnsafe?.user?.id || 0;
   let currentPlan = '6m';
   let paymentId = '';
+
+  // Загружаем реальное число участников с канала
+  async function loadStats() {
+    try {
+      const r = await fetch('/webapp/stats');
+      const d = await r.json();
+      const el = document.getElementById('members-count');
+      if (d.members && d.members > 0) {
+        el.textContent = d.members.toLocaleString('ru-RU');
+      } else {
+        el.textContent = '—';
+      }
+    } catch(e) {
+      document.getElementById('members-count').textContent = '—';
+    }
+  }
+  loadStats();
 
   function selectPlan(plan) {
     currentPlan = plan;
@@ -345,22 +335,16 @@
 
   function goToPayment() {
     const plan = PLANS[currentPlan];
-    // Обновляем экран оплаты
     document.getElementById('pay-plan-name').textContent = plan.name;
     document.getElementById('pay-plan-price').textContent = plan.price + '₽';
     document.getElementById('pay-plan-per').textContent = plan.per;
-
-    // Генерируем уникальный ID платежа
     paymentId = userId + '_' + currentPlan + '_' + Date.now();
-
     showScreen('screen-payment');
     window.scrollTo(0, 0);
   }
 
   function openYoomoney() {
     const plan = PLANS[currentPlan];
-    // Формируем ссылку ЮМани
-    const wallet = tg.initDataUnsafe?.bot?.username || '';
     const yooUrl = 'https://yoomoney.ru/quickpay/confirm?' +
       'receiver=YOOMONEY_WALLET_PLACEHOLDER' +
       '&quickpay-form=button' +
@@ -368,12 +352,10 @@
       '&paymentType=AC' +
       '&sum=' + plan.price +
       '&label=' + encodeURIComponent(paymentId);
-    window.open(yooUrl, '_blank');
-    return false;
+    tg.openLink(yooUrl);
   }
 
   function confirmPayment() {
-    // Отправляем данные боту
     tg.sendData(JSON.stringify({
       action: 'confirm_payment',
       plan: currentPlan,
@@ -395,14 +377,14 @@
 
   // Equalizer
   const eqContainer = document.getElementById('eq');
-  const durations = [.7,.55,.85,.65,.9,.6,.75,.5,.8,.68,.58,.72,.62,.88,.53,.77,.64,.92,.71,.57,.83,.61,.74,.54];
-  const heights = [10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
-  for (let i = 0; i < 24; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'eq-bar';
-    bar.style.cssText = `height:${heights[i]}px;opacity:${i%3===1?.7:1};background:${i%3===1?'#993C1D':'#D85A30'};animation:eq ${durations[i]}s ease-in-out infinite;`;
-    bar.style.animationDelay = `${(i*.04).toFixed(2)}s`;
-    eqContainer.appendChild(bar);
+  const durations=[.7,.55,.85,.65,.9,.6,.75,.5,.8,.68,.58,.72,.62,.88,.53,.77,.64,.92,.71,.57,.83,.61,.74,.54];
+  const heights=[10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
+  for(let i=0;i<24;i++){
+    const b=document.createElement('div');
+    b.className='eq-bar';
+    b.style.cssText=`height:${heights[i]}px;opacity:${i%3===1?.7:1};background:${i%3===1?'#993C1D':'#D85A30'};animation:eq ${durations[i]}s ease-in-out infinite;`;
+    b.style.animationDelay=`${(i*.04).toFixed(2)}s`;
+    eqContainer.appendChild(b);
   }
 </script>
 </body>
