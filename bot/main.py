@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import json
+import os
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
@@ -7,10 +9,9 @@ from aiogram.client.default import DefaultBotProperties
 from bot.handlers import start, payment, subscription, admin
 from bot.database import init_db
 from bot.scheduler import start_scheduler
-from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL
+from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID
 
 from aiohttp import web
-import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,8 +29,21 @@ async def ping_handler(request):
     return web.Response(text="OK")
 
 
+async def stats_handler(request):
+    """Реальная статистика канала для Mini App"""
+    try:
+        count = await bot.get_chat_member_count(chat_id=CHANNEL_ID)
+    except Exception:
+        count = 0
+    data = {"members": count}
+    return web.Response(
+        text=json.dumps(data),
+        content_type="application/json",
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+
 async def serve_webapp(request):
-    # Отдаём Mini App файлы
     filepath = os.path.join(os.path.dirname(__file__), '..', 'webapp', 'index.html')
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -53,6 +67,7 @@ async def run_polling():
 async def run_web():
     app = web.Application()
     app.router.add_get("/ping", ping_handler)
+    app.router.add_get("/webapp/stats", stats_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
     runner = web.AppRunner(app)
