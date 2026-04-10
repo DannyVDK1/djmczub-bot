@@ -2,6 +2,7 @@ import asyncio
 import logging
 import json
 import os
+import aiohttp
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
@@ -9,7 +10,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from bot.handlers import start, payment, subscription, admin
 from bot.database import init_db
 from bot.scheduler import start_scheduler
-from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID, YOOMONEY_WALLET
+from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID, YOOMONEY_WALLET, YOOMONEY_TOKEN
 from aiohttp import web
 
 logging.basicConfig(level=logging.INFO)
@@ -25,8 +26,10 @@ dp.include_router(payment.router)
 dp.include_router(subscription.router)
 dp.include_router(admin.router)
 
+
 async def ping_handler(request):
     return web.Response(text="OK")
+
 
 async def config_handler(request):
     return web.Response(
@@ -34,6 +37,7 @@ async def config_handler(request):
         content_type="application/json",
         headers={"Access-Control-Allow-Origin": "*"}
     )
+
 
 async def stats_handler(request):
     try:
@@ -48,6 +52,108 @@ async def stats_handler(request):
         headers={"Access-Control-Allow-Origin": "*"}
     )
 
+
+async def check_payment_handler(request):
+    """
+    Прямая проверка платежа из Mini App через HTTP.
+    Не зависит от tg.sendData() — работает всегда.
+    POST /webapp/check_payment
+    Body: {"user_id": 123, "plan": "6m"}
+    """
+    try:
+        data = await request.json()
+        user_id = int(data.get("user_id", 0))
+        plan_key = data.get("plan", "")
+
+        if not user_id or plan_key not in ["1m", "3m", "6m", "12m"]:
+            return web.Response(
+                text=json.dumps({"ok": False, "error": "Invalid params"}),
+                content_type="application/json",
+                headers={"Access-Control-Allow-Origin": "*"},
+                status=400
+            )
+
+        from bot.config import SUBSCRIPTION_PLANS
+        plan = SUBSCRIPTION_PLANS[plan_key]
+        label = f"{user_id}_{plan_key}"
+        logger.info(f"check_payment_handler: user={user_id} plan={plan_key} label={label}")
+
+        # Проверяем платёж через ЮМани API
+        is_paid = await check_yoomoney(label, plan["price"])
+
+        if not is_paid:
+            return web.Response(
+                text=json.dumps({"ok": False, "paid": False, "message": "Платёж не найден. Подождите 1-2 минуты и попробуйте снова."}),
+                content_type="application/json",
+                headers={"Access-Control-Allow-Origin": "*"}
+            )
+
+        # Активируем подписку
+        from bot.handlers.payment import activate_subscription
+        from bot.database import create_payment, get_payment
+        from datetime import datetime
+
+        payment_id = f"{user_id}_{plan_key}_{int(datetime.now().timestamp())}"
+        await create_payment(user_id, plan_key, plan["price"], payment_id)
+        payment_rec = await get_payment(payment_id)
+
+        class FakeUser:
+            def __init__(self, uid):
+                self.id = uid
+                self.username = ""
+                self.first_name = "Подписчик"
+
+        await activate_subscription(FakeUser(user_id), payment_rec, bot)
+
+        return web.Response(
+            text=json.dumps({"ok": True, "paid": True, "message": "Подписка активирована! Проверьте личные сообщения."}),
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"}
+        )
+
+    except Exception as e:
+        logger.error(f"check_payment_handler error: {e}", exc_info=True)
+        return web.Response(
+            text=json.dumps({"ok": False, "error": str(e)}),
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
+            status=500
+        )
+
+
+async def check_yoomoney(label: str, amount: int) -> bool:
+    """Проверка платежа через ЮМани API"""
+    if not YOOMONEY_TOKEN:
+        logger.error("YOOMONEY_TOKEN not set")
+        return False
+
+    url = "https://yoomoney.ru/api/operation-history"
+    headers = {
+        "Authorization": f"Bearer {YOOMONEY_TOKEN}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = f"label={label}&type=deposition&records=10"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, data=data) as resp:
+                body = await resp.text()
+                logger.info(f"YooMoney [{resp.status}] label={label}: {body[:200]}")
+                if resp.status != 200:
+                    return False
+                result = json.loads(body)
+                for op in result.get("operations", []):
+                    if (op.get("status") == "success"
+                            and op.get("direction") == "in"
+                            and op.get("label") == label
+                            and float(op.get("amount", 0)) >= amount * 0.99):
+                        return True
+                return False
+    except Exception as e:
+        logger.error(f"YooMoney error: {e}")
+        return False
+
+
 async def serve_webapp(request):
     filepath = os.path.join(os.path.dirname(__file__), '..', 'webapp', 'index.html')
     try:
@@ -55,6 +161,7 @@ async def serve_webapp(request):
             return web.Response(text=f.read(), content_type='text/html')
     except FileNotFoundError:
         return web.Response(text="Not found", status=404)
+
 
 async def on_startup(app):
     await init_db()
@@ -66,13 +173,15 @@ async def on_startup(app):
             allowed_updates=["message", "callback_query", "web_app_data"]
         )
         info = await bot.get_webhook_info()
-        logger.info(f"Webhook OK: {info.url}, pending: {info.pending_update_count}")
+        logger.info(f"Webhook OK: {info.url}")
     except Exception as e:
-        logger.error(f"Webhook setup error: {e}")
+        logger.error(f"Webhook error: {e}")
+
 
 async def on_shutdown(app):
     await bot.session.close()
     logger.info("Bot stopped")
+
 
 def main():
     app = web.Application()
@@ -81,11 +190,13 @@ def main():
     app.router.add_get("/ping", ping_handler)
     app.router.add_get("/webapp/config", config_handler)
     app.router.add_get("/webapp/stats", stats_handler)
+    app.router.add_post("/webapp/check_payment", check_payment_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+
 
 if __name__ == "__main__":
     main()
