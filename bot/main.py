@@ -10,7 +10,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from bot.handlers import start, payment, subscription, admin
 from bot.database import init_db
 from bot.scheduler import start_scheduler
-from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID
+from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID, YOOMONEY_WALLET
 
 from aiohttp import web
 
@@ -33,7 +33,17 @@ async def ping_handler(request):
     return web.Response(text="OK")
 
 
+async def config_handler(request):
+    """Конфиг для Mini App — номер кошелька ЮМани"""
+    return web.Response(
+        text=json.dumps({"wallet": YOOMONEY_WALLET}),
+        content_type="application/json",
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+
 async def stats_handler(request):
+    """Реальная статистика канала"""
     try:
         count = await bot.get_chat_member_count(chat_id=CHANNEL_ID)
         logger.info(f"Channel {CHANNEL_ID} members: {count}")
@@ -60,11 +70,10 @@ async def serve_webapp(request):
 async def on_startup(app):
     await init_db()
     start_scheduler(bot)
-    # Устанавливаем webhook
     await bot.set_webhook(
         url=WEBHOOK_FULL_URL,
         drop_pending_updates=True,
-        allowed_updates=dp.resolve_used_update_types()
+        allowed_updates=["message", "callback_query", "web_app_data"]
     )
     logger.info(f"Webhook set: {WEBHOOK_FULL_URL}")
 
@@ -78,12 +87,11 @@ async def on_shutdown(app):
 def main():
     app = web.Application()
 
-    # Регистрируем webhook handler
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
 
-    # Наши роуты
     app.router.add_get("/ping", ping_handler)
+    app.router.add_get("/webapp/config", config_handler)
     app.router.add_get("/webapp/stats", stats_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
