@@ -33,7 +33,7 @@
     .online-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
     .online-text{font-size:11px;color:#1D9E75;font-weight:500}
 
-    .hero{display:flex;flex-direction:column;align-items:center;padding:30px 20px 20px}
+    .hero{display:flex;flex-direction:column;align-items:center;padding:30px 20px 20px;overflow:visible}
     .orbit-container{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
     .ring{position:absolute;border-radius:50%;border:1px solid #D85A30;pointer-events:none}
     .ring-1{width:170px;height:170px;animation:ringPulse 2.5s ease-in-out infinite;opacity:.5}
@@ -77,7 +77,7 @@
     .camera-lens{width:18px;height:18px;border-radius:50%;border:2px solid #1D9E75;display:flex;align-items:center;justify-content:center}
     .camera-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75}
 
-    .stats{margin:0 16px 20px;background:#111;border-radius:14px;border:.5px solid #1a1a1a;display:flex}
+    .stats{margin:0 16px 20px;background:#111;border-radius:14px;border:.5px solid #1a1a1a;display:flex;position:relative;z-index:10}
     .stat{flex:1;padding:14px 0;text-align:center;position:relative}
     .stat:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:.5px;background:#1e1e1e}
     .stat-num{font-size:18px;font-weight:500;color:#D85A30}
@@ -305,6 +305,15 @@
   let currentPlan = '6m';
   let paymentId = '';
 
+  let YOOMONEY_WALLET = '';
+  (async function loadConfig() {
+    try {
+      const r = await fetch('/webapp/config');
+      const d = await r.json();
+      YOOMONEY_WALLET = d.wallet || '';
+    } catch(e) {}
+  })();
+
   // Загружаем реальное число участников с канала
   async function loadStats() {
     try {
@@ -346,7 +355,7 @@
   function openYoomoney() {
     const plan = PLANS[currentPlan];
     const yooUrl = 'https://yoomoney.ru/quickpay/confirm?' +
-      'receiver=YOOMONEY_WALLET_PLACEHOLDER' +
+      'receiver=' + encodeURIComponent(YOOMONEY_WALLET) + '' +
       '&quickpay-form=button' +
       '&targets=' + encodeURIComponent(plan.label) +
       '&paymentType=AC' +
