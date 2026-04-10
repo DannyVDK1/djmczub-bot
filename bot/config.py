@@ -3,16 +3,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8697598063:AAE-9dXxWwfCM5Z47dJJIi2tkkJmvGvcv1M")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))       # Основной закрытый канал
-CHAT_ID = int(os.getenv("CHAT_ID", "0"))              # Связанный чат для обсуждений
+CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 WEBHOOK_PATH = "/bot/webhook"
 WEB_SERVER_HOST = "0.0.0.0"
-WEB_SERVER_PORT = int(os.getenv("PORT", "8080"))
+WEB_SERVER_PORT = int(os.getenv("PORT", "10000"))
 
+# ЮМани
 YOOMONEY_TOKEN = os.getenv("YOOMONEY_TOKEN", "")
 YOOMONEY_WALLET = os.getenv("YOOMONEY_WALLET", "")
 
