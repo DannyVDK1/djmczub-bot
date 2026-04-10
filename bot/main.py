@@ -2,6 +2,7 @@ import asyncio
 import logging
 import json
 import os
+import signal
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
@@ -9,7 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from bot.handlers import start, payment, subscription, admin
 from bot.database import init_db
 from bot.scheduler import start_scheduler
-from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID
+from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, CHANNEL_ID
 
 from aiohttp import web
 
@@ -30,14 +31,14 @@ async def ping_handler(request):
 
 
 async def stats_handler(request):
-    """Реальная статистика канала для Mini App"""
     try:
         count = await bot.get_chat_member_count(chat_id=CHANNEL_ID)
-    except Exception:
+        logger.info(f"Channel members: {count}")
+    except Exception as e:
+        logger.error(f"Failed to get member count for {CHANNEL_ID}: {e}")
         count = 0
-    data = {"members": count}
     return web.Response(
-        text=json.dumps(data),
+        text=json.dumps({"members": count}),
         content_type="application/json",
         headers={"Access-Control-Allow-Origin": "*"}
     )
@@ -53,18 +54,15 @@ async def serve_webapp(request):
         return web.Response(text="Mini App not found", status=404)
 
 
-async def on_startup():
+async def main():
     await init_db()
-    logger.info("Bot started in polling mode")
-
-
-async def run_polling():
-    await on_startup()
     start_scheduler(bot)
-    await dp.start_polling(bot, skip_updates=True)
 
+    # Сначала удаляем вебхук если был установлен ранее
+    await bot.delete_webhook(drop_pending_updates=True)
+    logger.info("Webhook deleted, starting polling...")
 
-async def run_web():
+    # Веб-сервер
     app = web.Application()
     app.router.add_get("/ping", ping_handler)
     app.router.add_get("/webapp/stats", stats_handler)
@@ -74,16 +72,41 @@ async def run_web():
     await runner.setup()
     site = web.TCPSite(runner, WEB_SERVER_HOST, WEB_SERVER_PORT)
     await site.start()
-    logger.info(f"Web server started on port {WEB_SERVER_PORT}")
-    return runner
+    logger.info(f"Web server on port {WEB_SERVER_PORT}")
 
+    # Polling — с явной остановкой при SIGTERM
+    polling_task = asyncio.create_task(
+        dp.start_polling(
+            bot,
+            skip_updates=True,
+            handle_signals=False
+        )
+    )
 
-async def main():
-    runner = await run_web()
+    # Обработка сигнала остановки
+    loop = asyncio.get_event_loop()
+    stop_event = asyncio.Event()
+
+    def handle_sigterm():
+        logger.info("SIGTERM received, stopping...")
+        stop_event.set()
+
+    loop.add_signal_handler(signal.SIGTERM, handle_sigterm)
+    loop.add_signal_handler(signal.SIGINT, handle_sigterm)
+
+    await stop_event.wait()
+
+    # Грациозная остановка
+    polling_task.cancel()
     try:
-        await run_polling()
-    finally:
-        await runner.cleanup()
+        await polling_task
+    except asyncio.CancelledError:
+        pass
+
+    await dp.stop_polling()
+    await runner.cleanup()
+    await bot.session.close()
+    logger.info("Bot stopped gracefully")
 
 
 if __name__ == "__main__":
