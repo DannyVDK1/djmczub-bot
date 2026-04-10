@@ -1,261 +1,205 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>DJ MC ZUB</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
-    @keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    @keyframes orbitR{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
-    @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:.2}}
-    @keyframes ringPulse2{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.1);opacity:.1}}
-    @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
-    @keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-    @keyframes shimmer{0%,100%{opacity:.85}50%{opacity:1}}
-    @keyframes vinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-    .screen{display:none}.screen.active{display:block}
-
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:.5px solid #141414;background:#080808;position:sticky;top:0;z-index:10}
-    .nav-left{display:flex;align-items:center;gap:10px}
-    .nav-avatar{width:36px;height:36px;border-radius:50%;background:#111;border:1.5px solid #D85A30;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#D85A30;letter-spacing:.5px}
-    .nav-name{font-size:15px;font-weight:500}
-    .nav-sub{font-size:11px;color:#5F5E5A}
-
-    /* ONLINE — статичный, без анимации */
-    .online-badge{display:flex;align-items:center;gap:5px;background:#0a1c0a;border:.5px solid #1D9E75;border-radius:20px;padding:5px 12px}
-    .online-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
-    .online-text{font-size:11px;color:#1D9E75;font-weight:500}
-
-    .hero{display:flex;flex-direction:column;align-items:center;padding:30px 20px 20px;overflow:visible}
-    .orbit-container{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-    .ring{position:absolute;border-radius:50%;border:1px solid #D85A30;pointer-events:none}
-    .ring-1{width:170px;height:170px;animation:ringPulse 2.5s ease-in-out infinite;opacity:.5}
-    .ring-2{width:200px;height:200px;animation:ringPulse2 3s ease-in-out infinite .5s;opacity:.25;border-color:#993C1D}
-    .orbit-wrap{position:absolute;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-    .avatar-circle{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a1208,#0d0d0d);border:2px solid #D85A30;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;z-index:2;gap:2px}
-    .avatar-dj{font-size:13px;font-weight:700;color:#D85A30;letter-spacing:3px;line-height:1}
-    .avatar-mc{font-size:22px;font-weight:700;color:#f0f0f0;letter-spacing:2px;line-height:1}
-    .avatar-zub{font-size:26px;font-weight:700;color:#D85A30;letter-spacing:3px;line-height:1}
-    .avatar-line{width:60px;height:1px;background:#D85A30;opacity:.5;margin:2px 0}
-    .hero-name{font-size:26px;font-weight:500;letter-spacing:2px;text-align:center;margin-bottom:4px;animation:shimmer 3s ease-in-out infinite}
-    .hero-sub{font-size:12px;color:#444441;letter-spacing:1px;text-align:center}
-    .equalizer{display:flex;align-items:flex-end;gap:3px;height:40px;margin:16px auto;justify-content:center}
-    .eq-bar{width:4px;background:#D85A30;border-radius:2px;transform-origin:bottom}
-
-    .cards-row{display:flex;gap:10px;padding:0 16px 20px;overflow-x:auto}
-    .cards-row::-webkit-scrollbar{display:none}
-    .content-card{flex-shrink:0;width:110px;background:#111;border-radius:16px;border:.5px solid #1e1e1e;overflow:hidden}
-    .content-card:nth-child(1){animation:cardFloat 3s ease-in-out infinite}
-    .content-card:nth-child(2){animation:cardFloat 3.4s ease-in-out infinite;animation-delay:-1.1s}
-    .content-card:nth-child(3){animation:cardFloat 2.8s ease-in-out infinite;animation-delay:-.6s}
-    .card-preview{height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-    .card-preview.music{background:#1c1008}
-    .card-preview.live{background:#0d0d1c}
-    .card-preview.blog{background:#08100d}
-    .card-info{padding:10px}
-    .card-title{font-size:13px;font-weight:500;margin-bottom:3px}
-    .card-desc{font-size:10px;color:#5F5E5A;margin-bottom:3px}
-    .card-tag{font-size:10px}
-    .tag-music{color:#D85A30}.tag-live{color:#534AB7}.tag-blog{color:#1D9E75}
-    .vinyl{width:54px;height:54px;border-radius:50%;border:2px solid #D85A30;background:#0d0d0d;display:flex;align-items:center;justify-content:center;position:relative;animation:vinylSpin 4s linear infinite}
-    .vinyl::before{content:'';position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid #1e1e1e}
-    .vinyl::after{content:'';position:absolute;width:32px;height:32px;border-radius:50%;border:1px solid #1e1e1e}
-    .vinyl-center{width:12px;height:12px;border-radius:50%;background:#D85A30;z-index:2;display:flex;align-items:center;justify-content:center}
-    .vinyl-dot{width:4px;height:4px;border-radius:50%;background:#0d0d0d}
-    .live-pill{position:absolute;top:8px;left:8px;background:#D85A30;border-radius:8px;padding:2px 8px;font-size:9px;color:#FAECE7;font-weight:500;display:flex;align-items:center;gap:4px}
-    .live-pill-dot{width:5px;height:5px;border-radius:50%;background:#FAECE7;animation:blink .9s infinite}
-    .play-btn{width:32px;height:32px;border-radius:50%;background:#26215C;border:1px solid #534AB7;display:flex;align-items:center;justify-content:center}
-    .play-triangle{width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:12px solid #AFA9EC;margin-left:2px}
-    .camera-wrap{width:40px;height:40px;border-radius:10px;background:#085041;border:1px solid #1D9E75;display:flex;align-items:center;justify-content:center}
-    .camera-lens{width:18px;height:18px;border-radius:50%;border:2px solid #1D9E75;display:flex;align-items:center;justify-content:center}
-    .camera-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75}
-
-    .stats{margin:0 16px 20px;background:#111;border-radius:14px;border:.5px solid #1a1a1a;display:flex;position:relative;z-index:10}
-    .stat{flex:1;padding:14px 0;text-align:center;position:relative}
-    .stat:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:.5px;background:#1e1e1e}
-    .stat-num{font-size:18px;font-weight:500;color:#D85A30}
-    .stat-label{font-size:10px;color:#444441;margin-top:2px}
-
-    .section-label{font-size:11px;color:#333;letter-spacing:.8px;padding:0 20px;margin-bottom:10px}
-    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px}
-    .plan-card{background:#111;border:1.5px solid #222;border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
-    .plan-card.selected,.plan-card.featured{border-color:#D85A30;background:#1c1008}
-    .plan-card:active{opacity:.85}
-    .plan-badge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#D85A30;border-radius:8px;padding:2px 10px;font-size:9px;color:#FAECE7;font-weight:500;white-space:nowrap}
-    .plan-name{font-size:11px;color:#5F5E5A;margin-bottom:4px}
-    .plan-price{font-size:18px;font-weight:500;margin-bottom:3px}
-    .plan-per{font-size:10px;color:#5F5E5A}
-    .plan-discount{font-size:10px;color:#1D9E75}
-
-    .cta-wrap{padding:0 16px 20px}
-    .cta-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;transition:opacity .2s;display:flex;flex-direction:column;align-items:center;gap:3px}
-    .cta-btn:active{opacity:.85}
-    .cta-sub{font-size:12px;color:#F0997B;font-weight:400}
-    .footer-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
-
-    /* PAYMENT SCREEN */
-    #screen-payment{animation:slideUp .3s ease}
-    .pay-header{display:flex;align-items:center;gap:12px;padding:20px 20px 0}
-    .back-btn{width:36px;height:36px;border-radius:50%;background:#111;border:.5px solid #222;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#f0f0f0;flex-shrink:0}
-    .pay-title{font-size:18px;font-weight:500}
-    .pay-card{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
-    .pay-plan-name{font-size:13px;color:#5F5E5A;margin-bottom:4px}
-    .pay-plan-price{font-size:32px;font-weight:500;color:#f0f0f0;margin-bottom:4px}
-    .pay-plan-per{font-size:13px;color:#5F5E5A}
-    .pay-divider{height:.5px;background:#1e1e1e;margin:16px 0}
-    .pay-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .pay-row-label{font-size:13px;color:#888780}
-    .pay-row-val{font-size:13px;color:#f0f0f0;font-weight:500}
-    .pay-steps{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
-    .pay-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
-    .pay-step:last-child{margin-bottom:0}
-    .step-num{width:24px;height:24px;border-radius:50%;background:#D85A30;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#FAECE7;flex-shrink:0}
-    .step-text{font-size:13px;color:#e0e0e0;line-height:1.5;padding-top:3px}
-    .pay-btn-wrap{padding:20px 16px 12px}
-    .pay-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;display:block;text-decoration:none;text-align:center}
-    .check-btn{background:transparent;border:1.5px solid #D85A30;border-radius:16px;padding:14px;font-size:14px;font-weight:500;color:#D85A30;cursor:pointer;margin:0 16px 8px;width:calc(100% - 32px);display:block}
-    .pay-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
-
-    #screen-success{animation:fadeIn .4s ease;text-align:center;padding:60px 20px}
-    .success-icon{font-size:64px;margin-bottom:20px}
-    .success-title{font-size:24px;font-weight:500;margin-bottom:10px}
-    .success-sub{font-size:14px;color:#888780;line-height:1.6;margin-bottom:30px}
-    .success-btn{background:#D85A30;border:none;border-radius:16px;padding:17px 40px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>DJ MC ZUB</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes orbitR{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:.2}}
+@keyframes ringPulse2{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.1);opacity:.1}}
+@keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes shimmer{0%,100%{opacity:.85}50%{opacity:1}}
+@keyframes vinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.screen{display:none}.screen.active{display:block}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:.5px solid #141414;background:#080808;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:10px}
+.nav-avatar{width:36px;height:36px;border-radius:50%;background:#111;border:1.5px solid #D85A30;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#D85A30;letter-spacing:.5px}
+.nav-name{font-size:15px;font-weight:500}
+.nav-sub{font-size:11px;color:#5F5E5A}
+.online-badge{display:flex;align-items:center;gap:5px;background:#0a1c0a;border:.5px solid #1D9E75;border-radius:20px;padding:5px 12px}
+.online-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:blink 1.2s infinite}
+.online-text{font-size:11px;color:#1D9E75;font-weight:500}
+/* HERO — без overflow hidden, строго только анимация */
+.hero{display:flex;flex-direction:column;align-items:center;padding:24px 20px 16px}
+.orbit-container{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.ring{position:absolute;border-radius:50%;border:1px solid #D85A30;pointer-events:none}
+.ring-1{width:170px;height:170px;animation:ringPulse 2.5s ease-in-out infinite;opacity:.5}
+.ring-2{width:200px;height:200px;animation:ringPulse2 3s ease-in-out infinite .5s;opacity:.25;border-color:#993C1D}
+.orbit-wrap{position:absolute;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.avatar-circle{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a1208,#0d0d0d);border:2px solid #D85A30;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;z-index:2;gap:2px}
+.avatar-dj{font-size:13px;font-weight:700;color:#D85A30;letter-spacing:3px;line-height:1}
+.avatar-mc{font-size:22px;font-weight:700;color:#f0f0f0;letter-spacing:2px;line-height:1}
+.avatar-zub{font-size:26px;font-weight:700;color:#D85A30;letter-spacing:3px;line-height:1}
+.avatar-line{width:60px;height:1px;background:#D85A30;opacity:.5;margin:2px 0}
+.hero-name{font-size:26px;font-weight:500;letter-spacing:2px;text-align:center;margin-bottom:4px;animation:shimmer 3s ease-in-out infinite}
+.hero-sub{font-size:12px;color:#444441;letter-spacing:1px;text-align:center}
+.equalizer{display:flex;align-items:flex-end;gap:3px;height:36px;margin:14px auto 0;justify-content:center}
+.eq-bar{width:4px;background:#D85A30;border-radius:2px;transform-origin:bottom}
+/* STATS — отдельный блок вне hero */
+.stats{margin:16px 16px 0;background:#111;border-radius:14px;border:.5px solid #1a1a1a;display:flex}
+.stat{flex:1;padding:14px 0;text-align:center;position:relative}
+.stat:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:.5px;background:#1e1e1e}
+.stat-num{font-size:18px;font-weight:500;color:#D85A30}
+.stat-label{font-size:10px;color:#444441;margin-top:2px}
+/* CARDS */
+.cards-row{display:flex;gap:10px;padding:16px 16px 0;overflow-x:auto}
+.cards-row::-webkit-scrollbar{display:none}
+.content-card{flex-shrink:0;width:110px;background:#111;border-radius:16px;border:.5px solid #1e1e1e;overflow:hidden}
+.content-card:nth-child(1){animation:cardFloat 3s ease-in-out infinite}
+.content-card:nth-child(2){animation:cardFloat 3.4s ease-in-out infinite;animation-delay:-1.1s}
+.content-card:nth-child(3){animation:cardFloat 2.8s ease-in-out infinite;animation-delay:-.6s}
+.card-preview{height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.card-preview.music{background:#1c1008}
+.card-preview.live{background:#0d0d1c}
+.card-preview.blog{background:#08100d}
+.card-info{padding:10px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.card-desc{font-size:10px;color:#5F5E5A;margin-bottom:3px}
+.card-tag{font-size:10px}
+.tag-music{color:#D85A30}.tag-live{color:#534AB7}.tag-blog{color:#1D9E75}
+.vinyl{width:54px;height:54px;border-radius:50%;border:2px solid #D85A30;background:#0d0d0d;display:flex;align-items:center;justify-content:center;position:relative;animation:vinylSpin 4s linear infinite}
+.vinyl::before{content:'';position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid #1e1e1e}
+.vinyl::after{content:'';position:absolute;width:32px;height:32px;border-radius:50%;border:1px solid #1e1e1e}
+.vinyl-center{width:12px;height:12px;border-radius:50%;background:#D85A30;z-index:2;display:flex;align-items:center;justify-content:center}
+.vinyl-dot{width:4px;height:4px;border-radius:50%;background:#0d0d0d}
+.live-pill{position:absolute;top:8px;left:8px;background:#D85A30;border-radius:8px;padding:2px 8px;font-size:9px;color:#FAECE7;font-weight:500;display:flex;align-items:center;gap:4px}
+.live-pill-dot{width:5px;height:5px;border-radius:50%;background:#FAECE7;animation:blink .9s infinite}
+.play-btn{width:32px;height:32px;border-radius:50%;background:#26215C;border:1px solid #534AB7;display:flex;align-items:center;justify-content:center}
+.play-triangle{width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:12px solid #AFA9EC;margin-left:2px}
+.camera-wrap{width:40px;height:40px;border-radius:10px;background:#085041;border:1px solid #1D9E75;display:flex;align-items:center;justify-content:center}
+.camera-lens{width:18px;height:18px;border-radius:50%;border:2px solid #1D9E75;display:flex;align-items:center;justify-content:center}
+.camera-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75}
+/* PLANS */
+.section-label{font-size:11px;color:#333;letter-spacing:.8px;padding:0 20px;margin:16px 0 10px}
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px}
+.plan-card{background:#111;border:1.5px solid #222;border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
+.plan-card.selected,.plan-card.featured{border-color:#D85A30;background:#1c1008}
+.plan-card:active{opacity:.85}
+.plan-badge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#D85A30;border-radius:8px;padding:2px 10px;font-size:9px;color:#FAECE7;font-weight:500;white-space:nowrap}
+.plan-name{font-size:11px;color:#5F5E5A;margin-bottom:4px}
+.plan-price{font-size:18px;font-weight:500;margin-bottom:3px}
+.plan-per{font-size:10px;color:#5F5E5A}
+.plan-discount{font-size:10px;color:#1D9E75}
+.cta-wrap{padding:0 16px 20px}
+.cta-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cta-btn:active{opacity:.85}
+.cta-sub{font-size:12px;color:#F0997B;font-weight:400}
+.footer-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
+/* PAYMENT */
+#screen-payment{animation:slideUp .3s ease}
+.pay-header{display:flex;align-items:center;gap:12px;padding:20px 20px 0}
+.back-btn{width:36px;height:36px;border-radius:50%;background:#111;border:.5px solid #222;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#f0f0f0;flex-shrink:0}
+.pay-title{font-size:18px;font-weight:500}
+.pay-card{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
+.pay-plan-name{font-size:13px;color:#5F5E5A;margin-bottom:4px}
+.pay-plan-price{font-size:32px;font-weight:500;color:#f0f0f0;margin-bottom:4px}
+.pay-plan-per{font-size:13px;color:#5F5E5A}
+.pay-divider{height:.5px;background:#1e1e1e;margin:16px 0}
+.pay-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pay-row-label{font-size:13px;color:#888780}
+.pay-row-val{font-size:13px;color:#f0f0f0;font-weight:500}
+.pay-steps{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
+.pay-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.pay-step:last-child{margin-bottom:0}
+.step-num{width:24px;height:24px;border-radius:50%;background:#D85A30;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#FAECE7;flex-shrink:0}
+.step-text{font-size:13px;color:#e0e0e0;line-height:1.5;padding-top:3px}
+.pay-btn-wrap{padding:20px 16px 12px}
+.pay-btn{width:100%;background:#D85A30;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer;display:block;text-align:center}
+.check-btn{background:transparent;border:1.5px solid #D85A30;border-radius:16px;padding:14px;font-size:14px;font-weight:500;color:#D85A30;cursor:pointer;margin:0 16px 8px;width:calc(100% - 32px);display:block}
+.pay-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
+</style>
 </head>
 <body>
 
+<!-- ГЛАВНЫЙ ЭКРАН -->
 <div class="screen active" id="screen-home">
-  <div class="nav">
-    <div class="nav-left">
-      <div class="nav-avatar">ZUB</div>
-      <div>
-        <div class="nav-name">DJ MC ZUB</div>
-        <div class="nav-sub">Евгений Шестаков</div>
-      </div>
-    </div>
-    <!-- ONLINE статичный — убрана анимация cardFloat -->
-    <div class="online-badge">
-      <div class="online-dot"></div>
-      <span class="online-text">ONLINE</span>
-    </div>
+<div class="nav">
+  <div class="nav-left">
+    <div class="nav-avatar">ZUB</div>
+    <div><div class="nav-name">DJ MC ZUB</div><div class="nav-sub">Евгений Шестаков</div></div>
   </div>
+  <div class="online-badge"><div class="online-dot"></div><span class="online-text">ONLINE</span></div>
+</div>
 
-  <div class="hero">
-    <div class="orbit-container">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="orbit-wrap" style="animation:orbit 6s linear infinite">
-        <div style="position:absolute;width:9px;height:9px;border-radius:50%;background:#D85A30;top:0;left:50%;transform:translateX(-50%)"></div>
-      </div>
-      <div class="orbit-wrap" style="position:absolute;width:210px;height:210px">
-        <div style="animation:orbitR 10s linear infinite;width:100%;height:100%;position:relative">
-          <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:#993C1D;opacity:.6;top:0;left:50%;transform:translateX(-50%)"></div>
-        </div>
-      </div>
-      <div class="avatar-circle">
-        <div class="avatar-dj">DJ</div>
-        <div class="avatar-line"></div>
-        <div class="avatar-mc">MC</div>
-        <div class="avatar-zub">ZUB</div>
+<div class="hero">
+  <div class="orbit-container">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="orbit-wrap" style="animation:orbit 6s linear infinite">
+      <div style="position:absolute;width:9px;height:9px;border-radius:50%;background:#D85A30;top:0;left:50%;transform:translateX(-50%)"></div>
+    </div>
+    <div class="orbit-wrap" style="position:absolute;width:210px;height:210px">
+      <div style="animation:orbitR 10s linear infinite;width:100%;height:100%;position:relative">
+        <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:#993C1D;opacity:.6;top:0;left:50%;transform:translateX(-50%)"></div>
       </div>
     </div>
-    <div class="hero-name">DJ MC ZUB</div>
-    <div class="hero-sub">МУЗЫКА · ЛАЙВЫ · БЛОГ · ЗАКУЛИСЬЕ</div>
-    <div class="equalizer" id="eq"></div>
+    <div class="avatar-circle">
+      <div class="avatar-dj">DJ</div>
+      <div class="avatar-line"></div>
+      <div class="avatar-mc">MC</div>
+      <div class="avatar-zub">ZUB</div>
+    </div>
   </div>
+  <div class="hero-name">DJ MC ZUB</div>
+  <div class="hero-sub">МУЗЫКА · ЛАЙВЫ · БЛОГ · ЗАКУЛИСЬЕ</div>
+  <div class="equalizer" id="eq"></div>
+</div>
 
-  <div class="cards-row">
-    <div class="content-card">
-      <div class="card-preview music">
-        <div class="vinyl"><div class="vinyl-center"><div class="vinyl-dot"></div></div></div>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Треки</div>
-        <div class="card-desc">120+ миксов</div>
-        <div class="card-tag tag-music">Эксклюзив</div>
-      </div>
-    </div>
-    <div class="content-card">
-      <div class="card-preview live">
-        <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
-        <div class="play-btn"><div class="play-triangle"></div></div>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Лайвы</div>
-        <div class="card-desc">Стримы</div>
-        <div class="card-tag tag-live">Каждую неделю</div>
-      </div>
-    </div>
-    <div class="content-card">
-      <div class="card-preview blog">
-        <div class="camera-wrap"><div class="camera-lens"><div class="camera-dot"></div></div></div>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Блог</div>
-        <div class="card-desc">Закулисье</div>
-        <div class="card-tag tag-blog">Жизнь DJ</div>
-      </div>
-    </div>
-  </div>
+<!-- STATS отдельно от hero -->
+<div class="stats">
+  <div class="stat"><div class="stat-num" id="members-count">...</div><div class="stat-label">участников</div></div>
+  <div class="stat"><div class="stat-num">340+</div><div class="stat-label">постов</div></div>
+  <div class="stat"><div class="stat-num">15 лет</div><div class="stat-label">в эфире</div></div>
+</div>
 
-  <!-- Статистика — участники грузятся с сервера, 15 лет статично -->
-  <div class="stats">
-    <div class="stat"><div class="stat-num" id="members-count">...</div><div class="stat-label">участников</div></div>
-    <div class="stat"><div class="stat-num">340+</div><div class="stat-label">постов</div></div>
-    <div class="stat"><div class="stat-num">15 лет</div><div class="stat-label">в эфире</div></div>
+<!-- CARDS -->
+<div class="cards-row">
+  <div class="content-card">
+    <div class="card-preview music"><div class="vinyl"><div class="vinyl-center"><div class="vinyl-dot"></div></div></div></div>
+    <div class="card-info"><div class="card-title">Треки</div><div class="card-desc">120+ миксов</div><div class="card-tag tag-music">Эксклюзив</div></div>
   </div>
+  <div class="content-card">
+    <div class="card-preview live"><div class="live-pill"><div class="live-pill-dot"></div>LIVE</div><div class="play-btn"><div class="play-triangle"></div></div></div>
+    <div class="card-info"><div class="card-title">Лайвы</div><div class="card-desc">Стримы</div><div class="card-tag tag-live">Каждую неделю</div></div>
+  </div>
+  <div class="content-card">
+    <div class="card-preview blog"><div class="camera-wrap"><div class="camera-lens"><div class="camera-dot"></div></div></div></div>
+    <div class="card-info"><div class="card-title">Блог</div><div class="card-desc">Закулисье</div><div class="card-tag tag-blog">Жизнь DJ</div></div>
+  </div>
+</div>
 
-  <div class="section-label">ТАРИФЫ</div>
-  <div class="plans-grid">
-    <div class="plan-card" id="plan-1m" onclick="selectPlan('1m')">
-      <div class="plan-name">1 месяц</div>
-      <div class="plan-price">499₽</div>
-      <div class="plan-per">499 ₽/мес</div>
-    </div>
-    <div class="plan-card" id="plan-3m" onclick="selectPlan('3m')">
-      <div class="plan-name">3 месяца</div>
-      <div class="plan-price">1 197₽</div>
-      <div class="plan-per">399 ₽/мес</div>
-      <div class="plan-discount">−20%</div>
-    </div>
-    <div class="plan-card featured selected" id="plan-6m" onclick="selectPlan('6m')">
-      <div class="plan-badge">Хит продаж</div>
-      <div class="plan-name" style="color:#F0997B">6 месяцев</div>
-      <div class="plan-price">1 974₽</div>
-      <div class="plan-per" style="color:#993C1D">329 ₽/мес</div>
-      <div class="plan-discount">−34%</div>
-    </div>
-    <div class="plan-card" id="plan-12m" onclick="selectPlan('12m')">
-      <div class="plan-name">12 месяцев</div>
-      <div class="plan-price">2 988₽</div>
-      <div class="plan-per">249 ₽/мес</div>
-      <div class="plan-discount">−50%</div>
-    </div>
+<div class="section-label">ТАРИФЫ</div>
+<div class="plans-grid">
+  <div class="plan-card" id="plan-1m" onclick="selectPlan('1m')"><div class="plan-name">1 месяц</div><div class="plan-price">499₽</div><div class="plan-per">499 ₽/мес</div></div>
+  <div class="plan-card" id="plan-3m" onclick="selectPlan('3m')"><div class="plan-name">3 месяца</div><div class="plan-price">1 197₽</div><div class="plan-per">399 ₽/мес</div><div class="plan-discount">−20%</div></div>
+  <div class="plan-card featured selected" id="plan-6m" onclick="selectPlan('6m')">
+    <div class="plan-badge">Хит продаж</div>
+    <div class="plan-name" style="color:#F0997B">6 месяцев</div><div class="plan-price">1 974₽</div><div class="plan-per" style="color:#993C1D">329 ₽/мес</div><div class="plan-discount">−34%</div>
   </div>
+  <div class="plan-card" id="plan-12m" onclick="selectPlan('12m')"><div class="plan-name">12 месяцев</div><div class="plan-price">2 988₽</div><div class="plan-per">249 ₽/мес</div><div class="plan-discount">−50%</div></div>
+</div>
 
-  <div class="cta-wrap">
-    <button class="cta-btn" onclick="goToPayment()">
-      <span>Оплатить через ЮМани →</span>
-      <span class="cta-sub">Безопасная оплата · Мгновенный доступ</span>
-    </button>
-  </div>
-  <div class="footer-note">Без автопродления · Отмена в любой момент</div>
+<div class="cta-wrap">
+  <button class="cta-btn" onclick="goToPayment()">
+    <span>Оплатить через ЮМани →</span>
+    <span class="cta-sub">Безопасная оплата · Мгновенный доступ</span>
+  </button>
+</div>
+<div class="footer-note">Без автопродления · Отмена в любой момент</div>
 </div>
 
 <!-- ЭКРАН ОПЛАТЫ -->
 <div class="screen" id="screen-payment">
-  <div class="pay-header">
-    <div class="back-btn" onclick="goBack()">←</div>
-    <div class="pay-title">Оплата подписки</div>
-  </div>
+  <div class="pay-header"><div class="back-btn" onclick="goBack()">←</div><div class="pay-title">Оплата подписки</div></div>
   <div class="pay-card">
     <div class="pay-plan-name" id="pay-plan-name">6 месяцев</div>
     <div class="pay-plan-price" id="pay-plan-price">1 974₽</div>
@@ -270,131 +214,103 @@
     <div class="pay-step"><div class="step-num">2</div><div class="step-text">Переведи точную сумму на кошелёк DJ MC ZUB</div></div>
     <div class="pay-step"><div class="step-num">3</div><div class="step-text">Вернись и нажми <b>«Я оплатил»</b> — получишь ссылку в канал</div></div>
   </div>
-  <div class="pay-btn-wrap">
-    <button class="pay-btn" onclick="openYoomoney()">💳 Перейти к оплате</button>
-  </div>
+  <div class="pay-btn-wrap"><button class="pay-btn" onclick="openYoomoney()">💳 Перейти к оплате</button></div>
   <button class="check-btn" onclick="confirmPayment()">✅ Я оплатил — получить доступ</button>
-  <div class="pay-note">После нажатия бот проверит платёж и пришлёт ссылку в канал</div>
+  <div class="pay-note">Бот проверит платёж и пришлёт ссылку в канал</div>
 </div>
 
-<!-- ЭКРАН УСПЕХА -->
+<!-- УСПЕХ -->
 <div class="screen" id="screen-success">
   <div style="text-align:center;padding:60px 20px;animation:fadeIn .4s ease">
     <div style="font-size:64px;margin-bottom:20px">🎉</div>
     <div style="font-size:24px;font-weight:500;margin-bottom:10px">Запрос отправлен!</div>
-    <div style="font-size:14px;color:#888780;line-height:1.6;margin-bottom:30px">
-      Бот проверит твой платёж и пришлёт<br>инвайт-ссылку в личные сообщения.<br><br>Обычно это занимает меньше минуты.
-    </div>
+    <div style="font-size:14px;color:#888780;line-height:1.6;margin-bottom:30px">Бот проверит платёж и пришлёт<br>инвайт-ссылку в личные сообщения.<br><br>Обычно меньше минуты.</div>
     <button style="background:#D85A30;border:none;border-radius:16px;padding:17px 40px;font-size:16px;font-weight:500;color:#FAECE7;cursor:pointer" onclick="window.Telegram.WebApp.close()">Закрыть</button>
   </div>
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-  const PLANS = {
-    '1m':  {name:'1 месяц',    price:499,  per:'499 ₽ / месяц',  label:'Подписка DJ MC ZUB — 1 месяц'},
-    '3m':  {name:'3 месяца',   price:1197, per:'399 ₽ / месяц',  label:'Подписка DJ MC ZUB — 3 месяца'},
-    '6m':  {name:'6 месяцев',  price:1974, per:'329 ₽ / месяц',  label:'Подписка DJ MC ZUB — 6 месяцев'},
-    '12m': {name:'12 месяцев', price:2988, per:'249 ₽ / месяц',  label:'Подписка DJ MC ZUB — 12 месяцев'}
-  };
+const PLANS = {
+  '1m': {name:'1 месяц',    price:499,  per:'499 ₽/мес',  label:'Подписка DJ MC ZUB 1 месяц'},
+  '3m': {name:'3 месяца',   price:1197, per:'399 ₽/мес',  label:'Подписка DJ MC ZUB 3 месяца'},
+  '6m': {name:'6 месяцев',  price:1974, per:'329 ₽/мес',  label:'Подписка DJ MC ZUB 6 месяцев'},
+  '12m':{name:'12 месяцев', price:2988, per:'249 ₽/мес',  label:'Подписка DJ MC ZUB 12 месяцев'}
+};
 
-  const userId = tg.initDataUnsafe?.user?.id || 0;
-  let currentPlan = '6m';
-  let paymentId = '';
+const userId = tg.initDataUnsafe?.user?.id || 0;
+let currentPlan = '6m';
+let paymentId = '';
+let walletNumber = '';
 
-  let YOOMONEY_WALLET = '';
-  (async function loadConfig() {
-    try {
-      const r = await fetch('/webapp/config');
-      const d = await r.json();
-      YOOMONEY_WALLET = d.wallet || '';
-    } catch(e) {}
-  })();
+// Загружаем кошелёк с сервера
+fetch('/webapp/config').then(r=>r.json()).then(d=>{ walletNumber = d.wallet || ''; }).catch(()=>{});
 
-  // Загружаем реальное число участников с канала
-  async function loadStats() {
-    try {
-      const r = await fetch('/webapp/stats');
-      const d = await r.json();
-      const el = document.getElementById('members-count');
-      if (d.members && d.members > 0) {
-        el.textContent = d.members.toLocaleString('ru-RU');
-      } else {
-        el.textContent = '—';
-      }
-    } catch(e) {
-      document.getElementById('members-count').textContent = '—';
-    }
-  }
-  loadStats();
+// Загружаем число участников
+fetch('/webapp/stats').then(r=>r.json()).then(d=>{
+  const el = document.getElementById('members-count');
+  if (el) el.textContent = d.members > 0 ? d.members.toLocaleString('ru-RU') : '—';
+}).catch(()=>{ document.getElementById('members-count').textContent = '—'; });
 
-  function selectPlan(plan) {
-    currentPlan = plan;
-    document.querySelectorAll('.plan-card').forEach(c => {
-      c.classList.remove('selected');
-      if (!c.classList.contains('featured')) c.style.borderColor = '#222';
-    });
-    const el = document.getElementById('plan-' + plan);
-    el.classList.add('selected');
-    el.style.borderColor = '#D85A30';
-  }
+function selectPlan(plan) {
+  currentPlan = plan;
+  document.querySelectorAll('.plan-card').forEach(c=>{
+    c.classList.remove('selected');
+    if (!c.classList.contains('featured')) c.style.borderColor = '#222';
+  });
+  const el = document.getElementById('plan-'+plan);
+  el.classList.add('selected');
+  el.style.borderColor = '#D85A30';
+}
 
-  function goToPayment() {
-    const plan = PLANS[currentPlan];
-    document.getElementById('pay-plan-name').textContent = plan.name;
-    document.getElementById('pay-plan-price').textContent = plan.price + '₽';
-    document.getElementById('pay-plan-per').textContent = plan.per;
-    paymentId = userId + '_' + currentPlan + '_' + Date.now();
-    showScreen('screen-payment');
-    window.scrollTo(0, 0);
-  }
+function goToPayment() {
+  const plan = PLANS[currentPlan];
+  document.getElementById('pay-plan-name').textContent = plan.name;
+  document.getElementById('pay-plan-price').textContent = plan.price + '₽';
+  document.getElementById('pay-plan-per').textContent = plan.per;
+  paymentId = userId + '_' + currentPlan + '_' + Date.now();
+  showScreen('screen-payment');
+  window.scrollTo(0,0);
+}
 
-  function openYoomoney() {
-    const plan = PLANS[currentPlan];
-    const yooUrl = 'https://yoomoney.ru/quickpay/confirm?' +
-      'receiver=' + encodeURIComponent(YOOMONEY_WALLET) + '' +
-      '&quickpay-form=button' +
-      '&targets=' + encodeURIComponent(plan.label) +
-      '&paymentType=AC' +
-      '&sum=' + plan.price +
-      '&label=' + encodeURIComponent(paymentId);
-    tg.openLink(yooUrl);
-  }
+function openYoomoney() {
+  const plan = PLANS[currentPlan];
+  const url = 'https://yoomoney.ru/quickpay/confirm?' +
+    'receiver=' + encodeURIComponent(walletNumber) +
+    '&quickpay-form=button' +
+    '&targets=' + encodeURIComponent(plan.label) +
+    '&paymentType=AC' +
+    '&sum=' + plan.price +
+    '&label=' + encodeURIComponent(paymentId);
+  tg.openLink(url);
+}
 
-  function confirmPayment() {
-    tg.sendData(JSON.stringify({
-      action: 'confirm_payment',
-      plan: currentPlan,
-      payment_id: paymentId,
-      user_id: userId
-    }));
-    showScreen('screen-success');
-  }
+function confirmPayment() {
+  tg.sendData(JSON.stringify({action:'confirm_payment', plan:currentPlan, payment_id:paymentId, user_id:userId}));
+  showScreen('screen-success');
+}
 
-  function goBack() {
-    showScreen('screen-home');
-    window.scrollTo(0, 0);
-  }
+function goBack() { showScreen('screen-home'); window.scrollTo(0,0); }
 
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-  // Equalizer
-  const eqContainer = document.getElementById('eq');
-  const durations=[.7,.55,.85,.65,.9,.6,.75,.5,.8,.68,.58,.72,.62,.88,.53,.77,.64,.92,.71,.57,.83,.61,.74,.54];
-  const heights=[10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
-  for(let i=0;i<24;i++){
-    const b=document.createElement('div');
-    b.className='eq-bar';
-    b.style.cssText=`height:${heights[i]}px;opacity:${i%3===1?.7:1};background:${i%3===1?'#993C1D':'#D85A30'};animation:eq ${durations[i]}s ease-in-out infinite;`;
-    b.style.animationDelay=`${(i*.04).toFixed(2)}s`;
-    eqContainer.appendChild(b);
-  }
+// Equalizer
+const eq = document.getElementById('eq');
+const dur=[.7,.55,.85,.65,.9,.6,.75,.5,.8,.68,.58,.72,.62,.88,.53,.77,.64,.92,.71,.57,.83,.61,.74,.54];
+const hts=[10,28,16,36,12,32,20,8,24,14,38,18,36,10,32,16,24,12,20,28,38,8,14,16];
+for(let i=0;i<24;i++){
+  const b=document.createElement('div');
+  b.className='eq-bar';
+  b.style.cssText=`height:${hts[i]}px;opacity:${i%3===1?.7:1};background:${i%3===1?'#993C1D':'#D85A30'};animation:eq ${dur[i]}s ease-in-out infinite;`;
+  b.style.animationDelay=`${(i*.04).toFixed(2)}s`;
+  eq.appendChild(b);
+}
 </script>
 </body>
 </html>
