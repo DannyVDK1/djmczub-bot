@@ -278,18 +278,21 @@ function goToPayment() {
 
 function openYoomoney() {
   const plan = PLANS[currentPlan];
+  const shortLabel = userId + '_' + currentPlan;
   const url = 'https://yoomoney.ru/quickpay/confirm?' +
     'receiver=' + encodeURIComponent(walletNumber) +
     '&quickpay-form=button' +
     '&targets=' + encodeURIComponent(plan.label) +
     '&paymentType=AC' +
     '&sum=' + plan.price +
-    '&label=' + encodeURIComponent(paymentId);
+    '&label=' + encodeURIComponent(shortLabel);
   tg.openLink(url);
 }
 
 function confirmPayment() {
-  tg.sendData(JSON.stringify({action:'confirm_payment', plan:currentPlan, payment_id:paymentId, user_id:userId}));
+  tg.sendData(JSON.stringify({action:'confirm_payment', plan:currentPlan, user_id:userId}));
+  showScreen('screen-success');
+}));
   showScreen('screen-success');
 }
 
