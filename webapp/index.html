@@ -249,7 +249,7 @@ function openYoomoney(){
     '?receiver='+encodeURIComponent(walletNumber)+
     '&quickpay-form=button'+
     '&targets='+encodeURIComponent(plan.label)+
-    '&paymentType=AC'+
+    '&paymentType=PC'+
     '&sum='+plan.price+
     '&label='+encodeURIComponent(label);
   if(tg){tg.openLink(url);}else{window.open(url,'_blank');}
