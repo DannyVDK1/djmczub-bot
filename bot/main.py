@@ -27,6 +27,22 @@ dp.include_router(subscription.router)
 dp.include_router(admin.router)
 
 
+
+async def get_token_handler(request):
+    import aiohttp as _ah
+    c = request.rel_url.query.get('code', '')
+    if not c:
+        return web.Response(text='no code')
+    async with _ah.ClientSession() as s:
+        async with s.post('https://yoomoney.ru/oauth/token', data={
+            'code': c,
+            'client_id': '1E1BB17B5A10F0923D398183C68EFDBF54FB6538387DE99ADF2B6601C838C21C',
+            'grant_type': 'authorization_code',
+            'redirect_uri': 'https://djmczub-bot.onrender.com'
+        }) as r:
+            result = await r.text()
+            return web.Response(text=result, headers={"Access-Control-Allow-Origin": "*"})
+
 async def ping_handler(request):
     return web.Response(text="OK")
 
@@ -187,6 +203,7 @@ def main():
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
+    app.router.add_get("/get_token", get_token_handler)
     app.router.add_get("/ping", ping_handler)
     app.router.add_get("/webapp/config", config_handler)
     app.router.add_get("/webapp/stats", stats_handler)
