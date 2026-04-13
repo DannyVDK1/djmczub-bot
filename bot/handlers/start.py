@@ -8,47 +8,41 @@ from datetime import datetime
 router = Router()
 WEBAPP_URL = f"{WEBHOOK_URL}/webapp/"
 
+BOT_NAME = "DJ MC ZUB"
+BOT_DESCRIPTION = "Zakrytyj kanal DJ MC ZUB - muzyka, lajvy, blog i zakulisie"
+
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     user = message.from_user
     sub = await get_subscription(user.id)
 
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(
+            text="🎵 Открыть DJ MC ZUB",
+            web_app=WebAppInfo(url=WEBAPP_URL)
+        )
+    ]])
+
     if sub:
         expires = datetime.fromisoformat(sub["expires_at"])
         days_left = (expires - datetime.now()).days
         text = (
-            f"👋 Привет, <b>{user.first_name}</b>!\n\n"
-            f"✅ <b>Подписка активна</b>\n"
-            f"📅 Истекает: <b>{expires.strftime('%d.%m.%Y')}</b> "
-            f"(через {days_left} дн.)\n\n"
-            f"🎵 Добро пожаловать в мир <b>{"DJ MC ZUB"}</b>!\n"
-            f"Заходи в канал и наслаждайся эксклюзивным контентом."
+            f"👋 С возвращением, <b>{user.first_name}</b>!\n\n"
+            f"✅ Ваша подписка активна\n"
+            f"📅 Тариф: <b>{sub['plan']}</b>\n"
+            f"⏳ Осталось дней: <b>{days_left}</b>\n\n"
+            f"Нажмите кнопку ниже чтобы открыть Mini App:"
         )
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="🎵 Открыть приложение",
-                web_app=WebAppInfo(url=WEBAPP_URL)
-            )],
-        ])
     else:
         text = (
             f"👋 Привет, <b>{user.first_name}</b>!\n\n"
-            f"🎵 <b>{"DJ MC ZUB"}</b>\n"
-            "Закрытый канал DJ MC ZUB - музыка, лайвы, блог и закулисье\n\n"
-            f"🔒 <b>Закрытый канал</b> - это:\n"
-            f"• Эксклюзивные треки и миксы до релиза\n"
-            f"• Лайвы и стримы каждую неделю\n"
-            f"• Закулисье жизни DJ\n"
-            f"• Закрытое комьюнити\n\n"
-            f"💳 Подписка от <b>499 ₽/мес</b>\n"
-            f"Оплата через ЮМани · Без автопродления"
+            f"🎵 Добро пожаловать в мир <b>DJ MC ZUB</b>!\n\n"
+            f"Здесь вы найдёте:\n"
+            f"🎧 Эксклюзивные треки и миксы\n"
+            f"📺 Прямые эфиры и лайвы\n"
+            f"📸 Блог и закулисье\n\n"
+            f"Оформите подписку чтобы получить доступ:"
         )
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="🎵 Открыть и подписаться",
-                web_app=WebAppInfo(url=WEBAPP_URL)
-            )]
-        ])
 
     await message.answer(text, reply_markup=keyboard)
