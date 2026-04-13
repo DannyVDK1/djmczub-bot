@@ -10,6 +10,9 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 YOOMONEY_TOKEN = os.getenv("YOOMONEY_TOKEN", "")
 YOOMONEY_WALLET = os.getenv("YOOMONEY_WALLET", "4100116898751593")
 
+BOT_NAME = "DJ MC ZUB"
+BOT_DESCRIPTION = "Закрытый канал DJ MC ZUB — музыка, лайвы, блог и закулисье"
+
 WEB_SERVER_HOST = "0.0.0.0"
 WEB_SERVER_PORT = int(os.getenv("PORT", "10000"))
 
