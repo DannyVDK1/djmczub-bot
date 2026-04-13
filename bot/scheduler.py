@@ -6,51 +6,44 @@ from bot.database import get_expired_subscriptions, deactivate_subscription
 from bot.config import CHANNEL_ID
 
 logger = logging.getLogger(__name__)
-
 CHAT_ID = -1003989707456
 
-RULES_MESSAGE = """
-📋 <b>ПРАВИЛА ЧАТА DJ MC ZUB</b>
+RULES_MESSAGE = """\U0001f4cb <b>ПРАВИЛА ЧАТА DJ MC ZUB</b>
 
-Добро пожаловать в наше сообщество! Чтобы общение было комфортным для всех, просим соблюдать правила:
+Привет! Чтобы общение было комфортным — соблюдай правила:
 
-🚫 <b>ЗАПРЕЩЕНО:</b>
-• Обсуждение политики, выборов, войн и политических деятелей
-• Обсуждение религии, религиозных убеждений и призывов
-• Оскорбления других участников и автора канала
-• Нецензурная лексика и грубость
-• Реклама, спам и ссылки на сторонние ресурсы
-• Провокации и разжигание конфликтов
+\U0001f6ab <b>ЗАПРЕЩЕНО:</b>
+• Мат и нецензурная лексика
+• Оскорбления участников и автора
+• Обсуждение политики и войн
+• Обсуждение религии и призывы
+• Реклама, спам и ссылки
+• Провокации и конфликты
 
-⚠️ <b>СИСТЕМА ПРЕДУПРЕЖДЕНИЙ:</b>
-1️⃣ 1-е нарушение — предупреждение (1/3)
-2️⃣ 2-е нарушение — предупреждение (2/3)
-3️⃣ 3-е нарушение — предупреждение (3/3)
-🚫 После 3 предупреждений:
-• 1-й раз — блокировка на 1 сутки
-• 2-й раз — блокировка на 3 суток
-• 3-й раз — блокировка на 1 неделю
-• 4-й раз — постоянная блокировка в чате
+\u26a0\ufe0f <b>СИСТЕМА ПРЕДУПРЕЖДЕНИЙ:</b>
+1\ufe0f\u20e3 Нарушение → предупреждение 1/3
+2\ufe0f\u20e3 Нарушение → предупреждение 2/3
+3\ufe0f\u20e3 Нарушение → предупреждение 3/3
 
-✅ Блокировка только в этом чате. Доступ к основному каналу сохраняется.
+\U0001f6ab После 3 предупреждений:
+• 1-й раз — блокировка на <b>1 сутки</b>
+• 2-й раз — блокировка на <b>3 суток</b>
+• 3-й раз — блокировка на <b>1 неделю</b>
+• 4-й раз — <b>навсегда</b>
 
-💬 Давайте общаться уважительно и с удовольствием!
-@dj_mc_zub_bot — модератор чата
-""".strip()
+\u2705 Блокировка только в чате. Канал остаётся!
+\U0001f916 Модератор: @dj_mc_zub_bot""".strip()
 
 
 async def send_rules_reminder(bot: Bot):
-    """Отправляем напоминание о правилах каждый час"""
     try:
         msg = await bot.send_message(
             chat_id=CHAT_ID,
             text=RULES_MESSAGE,
             disable_notification=True
         )
-        # Закрепляем если нужно — нет, просто отправляем
         logger.info(f"Rules reminder sent to chat {CHAT_ID}")
-        # Удаляем через 50 минут чтобы не засорять чат
-        await asyncio.sleep(50 * 60)
+        await asyncio.sleep(25 * 60)
         try:
             await bot.delete_message(CHAT_ID, msg.message_id)
         except Exception:
@@ -73,16 +66,16 @@ async def check_expired_subscriptions(bot: Bot):
             from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                 InlineKeyboardButton(
-                    text="🎵 Продлить подписку",
+                    text="\U0001f3b5 Продлить подписку",
                     web_app=WebAppInfo(url=f"{WEBHOOK_URL}/webapp/")
                 )
             ]])
             await bot.send_message(
                 chat_id=user_id,
                 text=(
-                    "🔒 <b>Ваша подписка на DJ MC ZUB истекла</b>\n\n"
+                    "\U0001f512 <b>Ваша подписка на DJ MC ZUB истекла</b>\n\n"
                     "Доступ к закрытому каналу закрыт.\n\n"
-                    "Чтобы продолжить получать эксклюзивный контент — продлите подписку 👇"
+                    "Чтобы продолжить — продлите подписку \U0001f447"
                 ),
                 reply_markup=keyboard
             )
@@ -100,7 +93,7 @@ def start_scheduler(bot: Bot):
     )
     scheduler.add_job(
         send_rules_reminder,
-        trigger="interval", hours=1, args=[bot],
+        trigger="interval", minutes=30, args=[bot],
         id="rules_reminder", replace_existing=True
     )
     scheduler.start()
