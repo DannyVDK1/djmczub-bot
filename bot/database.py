@@ -6,6 +6,17 @@ DB_PATH = "data/bot.db"
 logger = logging.getLogger(__name__)
 
 
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def get_db():
+    import os
+    os.makedirs("data", exist_ok=True)
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        yield db
+
 async def init_db():
     import os
     os.makedirs("data", exist_ok=True)
