@@ -151,13 +151,13 @@ body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFo
 </div>
 <div class="section-label">ТАРИФЫ</div>
 <div class="plans-grid">
-  <div class="plan-card" id="plan-1m" onclick="selectPlan(event,'1m')"><div class="plan-name">1 месяц</div><div class="plan-price">499₽</div><div class="plan-per">499 ₽/мес</div></div>
-  <div class="plan-card" id="plan-3m" onclick="selectPlan(event,'3m')"><div class="plan-name">3 месяца</div><div class="plan-price">1 197₽</div><div class="plan-per">399 ₽/мес</div><div class="plan-discount">−20%</div></div>
+  <div class="plan-card" id="plan-1m" onclick="selectPlan(event,'1m')"><div class="plan-name">1 месяц</div><div class="plan-price">499₽</div><div class="plan-per">149 ₽/мес</div></div>
+  <div class="plan-card" id="plan-3m" onclick="selectPlan(event,'3m')"><div class="plan-name">3 месяца</div><div class="plan-price">1 197₽</div><div class="plan-per">119 ₽/мес</div><div class="plan-discount">−20%</div></div>
   <div class="plan-card featured selected" id="plan-6m" onclick="selectPlan(event,'6m')">
     <div class="plan-badge">Хит продаж</div>
-    <div class="plan-name" style="color:#F0997B">6 месяцев</div><div class="plan-price">1 974₽</div><div class="plan-per" style="color:#993C1D">329 ₽/мес</div><div class="plan-discount">−34%</div>
+    <div class="plan-name" style="color:#F0997B">6 месяцев</div><div class="plan-price">1 974₽</div><div class="plan-per" style="color:#993C1D">98 ₽/мес</div><div class="plan-discount">−34%</div>
   </div>
-  <div class="plan-card" id="plan-12m" onclick="selectPlan(event,'12m')"><div class="plan-name">12 месяцев</div><div class="plan-price">2 988₽</div><div class="plan-per">249 ₽/мес</div><div class="plan-discount">−50%</div></div>
+  <div class="plan-card" id="plan-12m" onclick="selectPlan(event,'12m')"><div class="plan-name">12 месяцев</div><div class="plan-price">2 988₽</div><div class="plan-per">74 ₽/мес</div><div class="plan-discount">−50%</div></div>
 </div>
 <div class="cta-wrap">
   <button class="cta-btn" onclick="goToPayment()">
@@ -173,7 +173,7 @@ body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFo
   <div class="pay-card">
     <div class="pay-plan-name" id="pay-plan-name">6 месяцев</div>
     <div class="pay-plan-price" id="pay-plan-price">1 974₽</div>
-    <div class="pay-plan-per" id="pay-plan-per">329 ₽/мес</div>
+    <div class="pay-plan-per" id="pay-plan-per">98 ₽/мес</div>
     <div class="pay-divider"></div>
     <div class="pay-row"><span class="pay-row-label">Способ оплаты</span><span class="pay-row-val">ЮМани</span></div>
     <div class="pay-row"><span class="pay-row-label">Автопродление</span><span class="pay-row-val" style="color:#1D9E75">Нет</span></div>
@@ -203,10 +203,10 @@ var tg=null;
 try{tg=window.Telegram.WebApp;tg.ready();tg.expand();}catch(e){}
 
 var PLANS={
-  '1m':{name:'1 месяц',price:499,per:'499 ₽/мес',label:'Подписка DJ MC ZUB 1 месяц'},
-  '3m':{name:'3 месяца',price:1197,per:'399 ₽/мес',label:'Подписка DJ MC ZUB 3 месяца'},
-  '6m':{name:'6 месяцев',price:1974,per:'329 ₽/мес',label:'Подписка DJ MC ZUB 6 месяцев'},
-  '12m':{name:'12 месяцев',price:2988,per:'249 ₽/мес',label:'Подписка DJ MC ZUB 12 месяцев'}
+  '1m':{name:'1 месяц',price:149,per:'149 ₽/мес',label:'Подписка DJ MC ZUB 1 месяц'},
+  '3m':{name:'3 месяца',price:357,per:'119 ₽/мес',label:'Подписка DJ MC ZUB 3 месяца'},
+  '6m':{name:'6 месяцев',price:591,per:'98 ₽/мес',label:'Подписка DJ MC ZUB 6 месяцев'},
+  '12m':{name:'12 месяцев',price:894,per:'74 ₽/мес',label:'Подписка DJ MC ZUB 12 месяцев'}
 };
 
 var userId=0;
