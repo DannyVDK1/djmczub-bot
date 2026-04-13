@@ -8,7 +8,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
-from bot.handlers import start, payment, subscription, admin
+from bot.handlers import start, payment, subscription, admin, moderation
 from bot.database import init_db
 from bot.scheduler import start_scheduler
 from bot.config import BOT_TOKEN, WEB_SERVER_HOST, WEB_SERVER_PORT, WEBHOOK_URL, CHANNEL_ID, YOOMONEY_WALLET, YOOMONEY_TOKEN
@@ -27,6 +27,7 @@ dp.include_router(start.router)
 dp.include_router(payment.router)
 dp.include_router(subscription.router)
 dp.include_router(admin.router)
+dp.include_router(moderation.router)
 
 
 async def ping_handler(request):
