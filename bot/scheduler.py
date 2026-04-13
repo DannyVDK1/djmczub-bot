@@ -6,28 +6,27 @@ from bot.database import get_expired_subscriptions, deactivate_subscription
 from bot.config import CHANNEL_ID
 
 logger = logging.getLogger(__name__)
+
 CHAT_ID = -1003989707456
 
-RULES_MESSAGE = """📋 <b>ПРАВИЛА ЧАТА DJ MC ZUB</b>
-
-👋 Добро пожаловать! Для комфортного общения соблюдайте правила:
-
-🚫 <b>ЗАПРЕЩЕНО:</b>
-• Политика — любые политические темы, деятели, события
-• Религия — религиозные темы, убеждения, призывы
-• Оскорбления участников и автора канала
-• Нецензурная лексика и мат
-• Реклама, спам, ссылки на сторонние ресурсы
-• Провокации и разжигание конфликтов
-
-⚠️ <b>СИСТЕМА ПРЕДУПРЕЖДЕНИЙ:</b>
-1️⃣ Нарушение → предупреждение 1/3
-2️⃣ Нарушение → предупреждение 2/3  
-3️⃣ Нарушение → предупреждение 3/3 → <b>бан 1 сутки</b>
-🔴 Повторно → <b>3 суток → неделя → навсегда</b>
-
-✅ Бан только в чате. Доступ к каналу сохраняется.
-🤖 Модератор: @dj_mc_zub_bot"""
+RULES_MESSAGE = (
+    "\U0001f4cb <b>ПРАВИЛА ЧАТА DJ MC ZUB</b>\n\n"
+    "Добро пожаловать! Для комфортного общения соблюдайте правила:\n\n"
+    "\U0001f6ab <b>ЗАПРЕЩЕНО:</b>\n"
+    "- Политика (выборы, война, политики)\n"
+    "- Религия и религиозные призывы\n"
+    "- Оскорбления участников и автора\n"
+    "- Нецензурная лексика\n"
+    "- Реклама, спам, сторонние ссылки\n"
+    "- Провокации и конфликты\n\n"
+    "\u26a0\ufe0f <b>ПРЕДУПРЕЖДЕНИЯ:</b>\n"
+    "1 наруш. - предупреждение 1/3\n"
+    "2 наруш. - предупреждение 2/3\n"
+    "3 наруш. - предупреждение 3/3 + бан 1 сутки\n"
+    "Далее: 3 суток - 1 неделя - навсегда\n\n"
+    "\u2705 Бан только из чата. Канал остаётся!\n"
+    "@dj_mc_zub_bot - модератор"
+)
 
 
 async def send_rules_reminder(bot: Bot):
@@ -37,14 +36,19 @@ async def send_rules_reminder(bot: Bot):
             text=RULES_MESSAGE,
             disable_notification=True
         )
-        logger.info(f"Rules reminder sent")
-        await asyncio.sleep(25 * 60)
-        try:
-            await bot.delete_message(CHAT_ID, msg.message_id)
-        except Exception:
-            pass
+        logger.info(f"Rules sent to {CHAT_ID}, msg_id={msg.message_id}")
+        # Планируем удаление через отдельную задачу
+        asyncio.create_task(_delete_later(bot, CHAT_ID, msg.message_id, 25 * 60))
     except Exception as e:
         logger.error(f"Rules reminder error: {e}")
+
+
+async def _delete_later(bot: Bot, chat_id: int, msg_id: int, delay: int):
+    try:
+        await asyncio.sleep(delay)
+        await bot.delete_message(chat_id, msg_id)
+    except Exception:
+        pass
 
 
 async def check_expired_subscriptions(bot: Bot):
@@ -61,16 +65,16 @@ async def check_expired_subscriptions(bot: Bot):
             from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                 InlineKeyboardButton(
-                    text="🎵 Продлить подписку",
+                    text="\U0001f3b5 Продлить подписку",
                     web_app=WebAppInfo(url=f"{WEBHOOK_URL}/webapp/")
                 )
             ]])
             await bot.send_message(
                 chat_id=user_id,
                 text=(
-                    "🔒 <b>Ваша подписка на DJ MC ZUB истекла</b>\n\n"
+                    "\U0001f512 <b>Ваша подписка на DJ MC ZUB истекла</b>\n\n"
                     "Доступ к закрытому каналу закрыт.\n\n"
-                    "Чтобы продолжить получать эксклюзивный контент — оформите подписку заново 👇"
+                    "Чтобы продолжить - продлите подписку:"
                 ),
                 reply_markup=keyboard
             )
