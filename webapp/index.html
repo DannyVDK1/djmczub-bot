@@ -151,13 +151,30 @@ body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFo
 </div>
 <div class="section-label">ТАРИФЫ</div>
 <div class="plans-grid">
-  <div class="plan-card" id="plan-1m" onclick="selectPlan(event,'1m')"><div class="plan-name">1 месяц</div><div class="plan-price">499₽</div><div class="plan-per">149 ₽/мес</div></div>
-  <div class="plan-card" id="plan-3m" onclick="selectPlan(event,'3m')"><div class="plan-name">3 месяца</div><div class="plan-price">1 197₽</div><div class="plan-per">119 ₽/мес</div><div class="plan-discount">−20%</div></div>
+  <div class="plan-card" id="plan-1m" onclick="selectPlan(event,'1m')">
+    <div class="plan-name">1 месяц</div>
+    <div class="plan-price">149₽</div>
+    <div class="plan-per">149 ₽/мес</div>
+  </div>
+  <div class="plan-card" id="plan-3m" onclick="selectPlan(event,'3m')">
+    <div class="plan-name">3 месяца</div>
+    <div class="plan-price">357₽</div>
+    <div class="plan-per">119 ₽/мес</div>
+    <div class="plan-discount">−20%</div>
+  </div>
   <div class="plan-card featured selected" id="plan-6m" onclick="selectPlan(event,'6m')">
     <div class="plan-badge">Хит продаж</div>
-    <div class="plan-name" style="color:#F0997B">6 месяцев</div><div class="plan-price">1 974₽</div><div class="plan-per" style="color:#993C1D">98 ₽/мес</div><div class="plan-discount">−34%</div>
+    <div class="plan-name" style="color:#F0997B">6 месяцев</div>
+    <div class="plan-price">591₽</div>
+    <div class="plan-per" style="color:#993C1D">98 ₽/мес</div>
+    <div class="plan-discount">−34%</div>
   </div>
-  <div class="plan-card" id="plan-12m" onclick="selectPlan(event,'12m')"><div class="plan-name">12 месяцев</div><div class="plan-price">2 988₽</div><div class="plan-per">74 ₽/мес</div><div class="plan-discount">−50%</div></div>
+  <div class="plan-card" id="plan-12m" onclick="selectPlan(event,'12m')">
+    <div class="plan-name">12 месяцев</div>
+    <div class="plan-price">894₽</div>
+    <div class="plan-per">74 ₽/мес</div>
+    <div class="plan-discount">−50%</div>
+  </div>
 </div>
 <div class="cta-wrap">
   <button class="cta-btn" onclick="goToPayment()">
