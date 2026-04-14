@@ -287,6 +287,45 @@ async def on_shutdown(app):
     logger.info("Bot stopped")
 
 
+
+async def subscription_status_handler(request):
+    """Статус подписки для Mini App"""
+    try:
+        user_id = int(request.rel_url.query.get('user_id', 0))
+        if not user_id:
+            return web.Response(
+                text=json.dumps({"active": False}),
+                content_type="application/json",
+                headers={"Access-Control-Allow-Origin": "*"}
+            )
+        from bot.database import get_subscription
+        sub = await get_subscription(user_id)
+        if not sub:
+            return web.Response(
+                text=json.dumps({"active": False}),
+                content_type="application/json",
+                headers={"Access-Control-Allow-Origin": "*"}
+            )
+        from datetime import datetime
+        expires_at = datetime.fromisoformat(sub["expires_at"])
+        active = expires_at > datetime.now()
+        return web.Response(
+            text=json.dumps({
+                "active": active,
+                "plan": sub.get("plan", ""),
+                "expires_at": sub["expires_at"],
+            }),
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"}
+        )
+    except Exception as e:
+        logger.error(f"Subscription status error: {e}")
+        return web.Response(
+            text=json.dumps({"active": False}),
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"}
+        )
+
 def main():
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
@@ -296,6 +335,7 @@ def main():
     app.router.add_get("/webapp/config", config_handler)
     app.router.add_get("/webapp/stats", stats_handler)
     app.router.add_post("/webapp/check_payment", check_payment_handler)
+    app.router.add_get("/webapp/subscription", subscription_status_handler)
     app.router.add_post("/yoomoney/notify", yoomoney_notify_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
