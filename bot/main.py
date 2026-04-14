@@ -361,37 +361,66 @@ async def admin_fix_sub_handler(request):
     except Exception as e:
         return web.Response(text=f'ERROR: {e}', status=500)
 
+
 async def admin_clean_invites_handler(request):
-    """Удаляет ВСЕ инвайт-ссылки созданные ботом в канале"""
+    """Удаляет все инвайт-ссылки бота в канале"""
+    secret = request.rel_url.query.get('secret', '')
+    if secret != 'zub2026fix':
+        return web.Response(text='forbidden', status=403)
+    deleted = 0
+    errors = []
+    # Все ссылки со скриншота которые нужно удалить
+    invite_links_to_revoke = []
     try:
-        secret = request.rel_url.query.get('secret', '')
-        if secret != 'zub2026fix':
-            return web.Response(text='forbidden', status=403)
-        from aiogram.types import ChatInviteLink
-        # Получаем все инвайт-ссылки канала
-        chat = await bot.get_chat(CHANNEL_ID)
-        # Используем exportChatInviteLink чтобы получить список
-        # Revoke все ссылки созданные ботом
-        deleted = 0
-        errors = []
-        # Получаем список через getChat и invite_link
-        try:
-            links_resp = await bot.session.api.request(
-                token=bot.token,
-                method="getExportedChatInviteLinks",
-                data={"chat_id": CHANNEL_ID, "limit": 100}
-            )
-            for link in links_resp.get('result', {}).get('invite_links', []):
-                try:
-                    await bot.revoke_chat_invite_link(chat_id=CHANNEL_ID, invite_link=link['invite_link'])
-                    deleted += 1
-                except Exception as e:
-                    errors.append(str(e))
-        except Exception as e:
-            errors.append(f"getExportedChatInviteLinks: {e}")
-        return web.Response(text=f'Deleted: {deleted}, errors: {errors}')
+        # Получаем список через Telegram API
+        import aiohttp as _ah
+        async with _ah.ClientSession() as s:
+            for offset_id in [0]:
+                params = {
+                    'chat_id': CHANNEL_ID,
+                    'limit': 100,
+                }
+                async with s.post(
+                    f'https://api.telegram.org/bot{BOT_TOKEN}/getExportedChatInviteLinks',
+                    json=params
+                ) as r:
+                    data = await r.json()
+                    if data.get('ok'):
+                        links = data['result'].get('invite_links', [])
+                        for link in links:
+                            invite_links_to_revoke.append(link['invite_link'])
+                    else:
+                        errors.append(f"getLinks error: {data}")
+
+        # Также добавляем expired ссылки
+        async with _ah.ClientSession() as s:
+            async with s.post(
+                f'https://api.telegram.org/bot{BOT_TOKEN}/getExportedChatInviteLinks',
+                json={'chat_id': CHANNEL_ID, 'limit': 100, 'is_revoked': False}
+            ) as r:
+                data = await r.json()
+                if data.get('ok'):
+                    for link in data['result'].get('invite_links', []):
+                        if link['invite_link'] not in invite_links_to_revoke:
+                            invite_links_to_revoke.append(link['invite_link'])
+
+        # Revoke все найденные ссылки
+        for link_url in invite_links_to_revoke:
+            try:
+                await bot.revoke_chat_invite_link(chat_id=CHANNEL_ID, invite_link=link_url)
+                deleted += 1
+                await asyncio.sleep(0.3)
+            except Exception as e:
+                errors.append(f"{link_url}: {e}")
+
     except Exception as e:
-        return web.Response(text=f'ERROR: {e}', status=500)
+        errors.append(str(e))
+
+    return web.Response(
+        text=json.dumps({'deleted': deleted, 'errors': errors, 'found': len(invite_links_to_revoke)}, ensure_ascii=False),
+        content_type='application/json'
+    )
+
 
 async def admin_db_handler(request):
     """Просмотр всей БД подписок"""
