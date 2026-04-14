@@ -340,7 +340,7 @@ async def subscription_status_handler(request):
 
 
 async def admin_fix_sub_handler(request):
-    """Временный endpoint для ручного добавления подписки"""
+    """Добавление подписки в БД без создания инвайта"""
     try:
         user_id = int(request.rel_url.query.get('user_id', 0))
         plan_key = request.rel_url.query.get('plan', '1m')
@@ -348,31 +348,50 @@ async def admin_fix_sub_handler(request):
         if secret != 'zub2026fix' or not user_id:
             return web.Response(text='forbidden', status=403)
         from bot.config import SUBSCRIPTION_PLANS
-        from bot.database import create_or_update_subscription
+        from bot.database import create_or_update_subscription, get_subscription
         from datetime import datetime, timedelta
+        # Проверяем нет ли уже подписки
+        existing = await get_subscription(user_id)
+        if existing:
+            return web.Response(text=f'Already exists for {user_id}: expires {existing["expires_at"]}')
         plan = SUBSCRIPTION_PLANS[plan_key]
         expires_at = datetime.now() + timedelta(days=plan['days'])
         await create_or_update_subscription(user_id, '', plan_key, expires_at, f'manual_{user_id}')
-        # Отправляем новый инвайт
-        invite = await bot.create_chat_invite_link(
-            chat_id=CHANNEL_ID,
-            member_limit=1,
-            expire_date=int(expires_at.timestamp()),
-            name=f'fix_{user_id}'
-        )
-        await bot.send_message(
-            chat_id=user_id,
-            text=(
-                f"✅ <b>Подписка активирована!</b>\n\n"
-                f"📋 Тариф: {plan['name']}\n"
-                f"📅 До: {expires_at.strftime('%d.%m.%Y')}\n\n"
-                f"🔗 Ссылка для входа в канал:\n{invite.invite_link}"
-            )
-        )
         return web.Response(text=f'OK: sub created for {user_id}, plan={plan_key}, expires={expires_at}')
     except Exception as e:
         return web.Response(text=f'ERROR: {e}', status=500)
 
+async def admin_clean_invites_handler(request):
+    """Удаляет ВСЕ инвайт-ссылки созданные ботом в канале"""
+    try:
+        secret = request.rel_url.query.get('secret', '')
+        if secret != 'zub2026fix':
+            return web.Response(text='forbidden', status=403)
+        from aiogram.types import ChatInviteLink
+        # Получаем все инвайт-ссылки канала
+        chat = await bot.get_chat(CHANNEL_ID)
+        # Используем exportChatInviteLink чтобы получить список
+        # Revoke все ссылки созданные ботом
+        deleted = 0
+        errors = []
+        # Получаем список через getChat и invite_link
+        try:
+            links_resp = await bot.session.api.request(
+                token=bot.token,
+                method="getExportedChatInviteLinks",
+                data={"chat_id": CHANNEL_ID, "limit": 100}
+            )
+            for link in links_resp.get('result', {}).get('invite_links', []):
+                try:
+                    await bot.revoke_chat_invite_link(chat_id=CHANNEL_ID, invite_link=link['invite_link'])
+                    deleted += 1
+                except Exception as e:
+                    errors.append(str(e))
+        except Exception as e:
+            errors.append(f"getExportedChatInviteLinks: {e}")
+        return web.Response(text=f'Deleted: {deleted}, errors: {errors}')
+    except Exception as e:
+        return web.Response(text=f'ERROR: {e}', status=500)
 
 async def admin_db_handler(request):
     """Просмотр всей БД подписок"""
