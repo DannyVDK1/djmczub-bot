@@ -10,17 +10,14 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 YOOMONEY_TOKEN = os.getenv("YOOMONEY_TOKEN", "")
 YOOMONEY_WALLET = os.getenv("YOOMONEY_WALLET", "4100116898751593")
 
-BOT_NAME = "DJ MC ZUB"
-BOT_DESCRIPTION = "Закрытый канал DJ MC ZUB — музыка, лайвы, блог и закулисье"
-
 WEB_SERVER_HOST = "0.0.0.0"
 WEB_SERVER_PORT = int(os.getenv("PORT", "10000"))
 
-# Тарифы: базовая цена 149 руб/мес
 SUBSCRIPTION_PLANS = {
     "1m": {
         "name": "1 месяц",
         "months": 1,
+        "days": 30,
         "price": 149,
         "per_month": 149,
         "discount": 0,
@@ -29,6 +26,7 @@ SUBSCRIPTION_PLANS = {
     "3m": {
         "name": "3 месяца",
         "months": 3,
+        "days": 90,
         "price": 357,
         "per_month": 119,
         "discount": 20,
@@ -37,6 +35,7 @@ SUBSCRIPTION_PLANS = {
     "6m": {
         "name": "6 месяцев",
         "months": 6,
+        "days": 180,
         "price": 591,
         "per_month": 98,
         "discount": 34,
@@ -45,6 +44,7 @@ SUBSCRIPTION_PLANS = {
     "12m": {
         "name": "12 месяцев",
         "months": 12,
+        "days": 365,
         "price": 894,
         "per_month": 74,
         "discount": 50,
