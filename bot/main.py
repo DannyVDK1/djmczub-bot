@@ -110,7 +110,7 @@ async def yoomoney_notify_handler(request):
         plan = SUBSCRIPTION_PLANS[plan_key]
         paid_amount = float(amount)
 
-        if paid_amount < plan["price"] * 0.99:
+        if paid_amount < plan["price"] * 0.90:
             logger.warning(f"Amount too small: {paid_amount} < {plan['price']}")
             return web.Response(text="ok")
 
@@ -236,7 +236,7 @@ async def check_yoomoney_api(label: str, amount: int) -> bool:
                     if (op.get("status") == "success"
                             and op.get("direction") == "in"
                             and op.get("label") == label
-                            and float(op.get("amount", 0)) >= amount * 0.99):
+                            and float(op.get("amount", 0)) >= amount * 0.90):
                         return True
                 return False
     except Exception as e:
