@@ -398,6 +398,41 @@ async def admin_db_handler(request):
         headers={"Access-Control-Allow-Origin": "*"}
     )
 
+
+async def admin_clean_db_handler(request):
+    """Очистка БД — удаляем всё кроме нужных user_id"""
+    secret = request.rel_url.query.get('secret', '')
+    if secret != 'zub2026fix':
+        return web.Response(text='forbidden', status=403)
+    import aiosqlite
+    keep_users = [1039383660, 6905306977, 377674248, 648642501]
+    results = {}
+    try:
+        async with aiosqlite.connect('data/bot.db') as db:
+            # Удаляем лишние подписки
+            cur = await db.execute(
+                f"DELETE FROM subscriptions WHERE user_id NOT IN ({','.join(map(str, keep_users))})"
+            )
+            results['deleted_subs'] = cur.rowcount
+            # Очищаем таблицу payments полностью (там мусор от тестов)
+            cur2 = await db.execute("DELETE FROM payments")
+            results['deleted_payments'] = cur2.rowcount
+            # Очищаем violations от тестов
+            cur3 = await db.execute("DELETE FROM violations")
+            results['deleted_violations'] = cur3.rowcount
+            await db.commit()
+            # Показываем что осталось
+            async with db.execute("SELECT user_id, plan, expires_at, is_active FROM subscriptions") as c:
+                rows = await c.fetchall()
+                results['remaining'] = [dict(zip(['user_id','plan','expires_at','is_active'], r)) for r in rows]
+    except Exception as e:
+        results['error'] = str(e)
+    return web.Response(
+        text=__import__('json').dumps(results, ensure_ascii=False, indent=2),
+        content_type='application/json',
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
 def main():
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
@@ -410,6 +445,7 @@ def main():
     app.router.add_get("/webapp/subscription", subscription_status_handler)
     app.router.add_get("/admin/fix_sub", admin_fix_sub_handler)
     app.router.add_get("/admin/db", admin_db_handler)
+    app.router.add_get("/admin/clean_db", admin_clean_db_handler)
     app.router.add_post("/yoomoney/notify", yoomoney_notify_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
