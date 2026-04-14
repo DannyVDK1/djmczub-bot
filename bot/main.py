@@ -373,6 +373,31 @@ async def admin_fix_sub_handler(request):
     except Exception as e:
         return web.Response(text=f'ERROR: {e}', status=500)
 
+
+async def admin_db_handler(request):
+    """Просмотр всей БД подписок"""
+    secret = request.rel_url.query.get('secret', '')
+    if secret != 'zub2026fix':
+        return web.Response(text='forbidden', status=403)
+    import aiosqlite
+    result = {}
+    try:
+        async with aiosqlite.connect('data/bot.db') as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT user_id, plan, expires_at, payment_id, created_at FROM subscriptions ORDER BY created_at DESC") as cur:
+                rows = await cur.fetchall()
+                result['subscriptions'] = [dict(r) for r in rows]
+            async with db.execute("SELECT user_id, plan, amount, payment_id, status, created_at FROM payments ORDER BY created_at DESC LIMIT 20") as cur:
+                rows = await cur.fetchall()
+                result['payments'] = [dict(r) for r in rows]
+    except Exception as e:
+        result['error'] = str(e)
+    return web.Response(
+        text=__import__('json').dumps(result, ensure_ascii=False, indent=2),
+        content_type='application/json',
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
 def main():
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
@@ -384,6 +409,7 @@ def main():
     app.router.add_post("/webapp/check_payment", check_payment_handler)
     app.router.add_get("/webapp/subscription", subscription_status_handler)
     app.router.add_get("/admin/fix_sub", admin_fix_sub_handler)
+    app.router.add_get("/admin/db", admin_db_handler)
     app.router.add_post("/yoomoney/notify", yoomoney_notify_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
