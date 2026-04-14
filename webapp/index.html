@@ -99,6 +99,39 @@ body{background:#080808;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFo
 .check-btn{background:transparent;border:1.5px solid #D85A30;border-radius:16px;padding:14px;font-size:14px;font-weight:500;color:#D85A30;cursor:pointer;margin:0 16px 8px;width:calc(100% - 32px);display:block}
 .check-btn:disabled{opacity:.5;cursor:not-allowed}
 .pay-note{text-align:center;font-size:11px;color:#333;padding:0 16px 24px}
+
+.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#0d0d0d;border-top:.5px solid #1a1a1a;z-index:200;padding:8px 0 12px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
+.nav-icon{font-size:20px;line-height:1}
+.nav-label{font-size:10px;color:#444441}
+.nav-item.active .nav-label{color:#D85A30}
+.bottom-nav-spacer{height:65px}
+#screen-mysub{animation:slideUp .3s ease}
+.sub-card{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
+.sub-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sub-status-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500}
+.sub-status-badge.active{background:#0a1c0a;color:#1D9E75;border:.5px solid #1D9E75}
+.sub-status-badge.warning{background:#1c1208;color:#D85A30;border:.5px solid #D85A30}
+.sub-status-badge.expired{background:#1a0a0a;color:#e05050;border:.5px solid #e05050}
+.sub-plan-name{font-size:22px;font-weight:500;margin-bottom:4px}
+.sub-plan-label{font-size:12px;color:#5F5E5A}
+.sub-divider{height:.5px;background:#1e1e1e;margin:16px 0}
+.sub-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sub-row:last-child{margin-bottom:0}
+.sub-row-label{font-size:13px;color:#888780}
+.sub-row-val{font-size:13px;font-weight:500}
+.progress-wrap{margin:20px 16px 0;background:#111;border:.5px solid #1e1e1e;border-radius:18px;padding:20px}
+.progress-title{font-size:12px;color:#5F5E5A;margin-bottom:10px}
+.progress-bar-bg{height:8px;background:#1e1e1e;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#D85A30,#F0997B);border-radius:4px;transition:width .6s ease}
+.progress-labels{display:flex;justify-content:space-between}
+.progress-label{font-size:11px;color:#5F5E5A}
+.progress-pct{font-size:11px;color:#D85A30;font-weight:500}
+.no-sub-wrap{text-align:center;padding:60px 20px}
+.no-sub-icon{font-size:64px;margin-bottom:16px}
+.no-sub-title{font-size:20px;font-weight:500;margin-bottom:8px}
+.no-sub-text{font-size:14px;color:#888780;line-height:1.6;margin-bottom:28px}
+.new-sub-btn{background:#D85A30;border:none;border-radius:16px;padding:16px 40px;font-size:15px;font-weight:500;color:#FAECE7;cursor:pointer}
 </style>
 </head>
 <body>
@@ -316,5 +349,71 @@ for(var i=0;i<24;i++){
   if(eq)eq.appendChild(b);
 }
 </script>
+
+<!-- Экран: Моя подписка -->
+<div class="screen" id="screen-mysub">
+  <div class="nav">
+    <div class="nav-left">
+      <div class="nav-avatar">ZUB</div>
+      <div><div class="nav-name">Моя подписка</div><div class="nav-sub">DJ MC ZUB</div></div>
+    </div>
+  </div>
+  <div id="sub-content-loading" style="text-align:center;padding:60px 20px;color:#444441">Загружаем...</div>
+  <div id="sub-content-active" style="display:none">
+    <div class="sub-card">
+      <div class="sub-status-row">
+        <div>
+          <div class="sub-plan-name" id="sub-plan-name">—</div>
+          <div class="sub-plan-label">Тариф подписки</div>
+        </div>
+        <div class="sub-status-badge active" id="sub-status-badge">Активна</div>
+      </div>
+      <div class="sub-divider"></div>
+      <div class="sub-row">
+        <span class="sub-row-label">Действует до</span>
+        <span class="sub-row-val" id="sub-expires">—</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-row-label">Осталось дней</span>
+        <span class="sub-row-val" id="sub-days-left" style="color:#D85A30">—</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-row-label">Цена тарифа</span>
+        <span class="sub-row-val" id="sub-price">—</span>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-title">ПРОГРЕСС ПОДПИСКИ</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="sub-progress-fill" style="width:0%"></div></div>
+      <div class="progress-labels">
+        <span class="progress-label" id="sub-start-date">—</span>
+        <span class="progress-pct" id="sub-pct">0%</span>
+        <span class="progress-label" id="sub-end-date">—</span>
+      </div>
+    </div>
+    <div class="bottom-nav-spacer"></div>
+  </div>
+  <div id="sub-content-empty" style="display:none">
+    <div class="no-sub-wrap">
+      <div class="no-sub-icon">🔒</div>
+      <div class="no-sub-title">Нет активной подписки</div>
+      <div class="no-sub-text">Оформите подписку чтобы получить доступ к эксклюзивному контенту DJ MC ZUB</div>
+      <button class="new-sub-btn" onclick="showScreen('screen-home');setActiveNav('home')">Оформить подписку</button>
+    </div>
+    <div class="bottom-nav-spacer"></div>
+  </div>
+</div>
+
+<!-- Нижняя навигация -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="goHome()">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">Главная</div>
+  </div>
+  <div class="nav-item" id="nav-sub" onclick="goMySub()">
+    <div class="nav-icon">🎫</div>
+    <div class="nav-label">Подписка</div>
+  </div>
+</div>
 </body>
 </html>
