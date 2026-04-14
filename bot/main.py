@@ -182,6 +182,18 @@ async def check_payment_handler(request):
                 headers={"Access-Control-Allow-Origin": "*"}
             )
 
+        # Проверяем — нет ли уже активной подписки чтобы не дублировать инвайт
+        existing = await get_subscription(user_id)
+        if existing:
+            from datetime import datetime
+            exp = datetime.fromisoformat(existing["expires_at"])
+            if exp > datetime.now():
+                return web.Response(
+                    text=json.dumps({"ok": True, "paid": True, "message": "Подписка уже активна! Проверьте личные сообщения — инвайт уже был отправлен."}),
+                    content_type="application/json",
+                    headers={"Access-Control-Allow-Origin": "*"}
+                )
+
         # Активируем
         from bot.handlers.payment import activate_subscription
         from bot.database import create_payment, get_payment
