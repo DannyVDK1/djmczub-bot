@@ -314,7 +314,7 @@ function confirmPayment(){
     body:JSON.stringify({user_id:userId,plan:currentPlan})
   }).then(function(r){return r.json();})
   .then(function(d){
-    if(d.paid){
+    if(d.ok===true && d.paid===true){
       showScreen('screen-success');
     } else {
       if(btn){btn.textContent='✅ Я оплатил — получить доступ';btn.disabled=false;}
@@ -322,7 +322,7 @@ function confirmPayment(){
     }
   }).catch(function(){
     if(btn){btn.textContent='✅ Я оплатил — получить доступ';btn.disabled=false;}
-    alert('Ошибка. Попробуйте ещё раз.');
+    alert('Ошибка сети. Попробуйте ещё раз.');
   });
 }
 
