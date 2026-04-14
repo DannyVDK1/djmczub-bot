@@ -384,10 +384,10 @@ async def admin_db_handler(request):
     try:
         async with aiosqlite.connect('data/bot.db') as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT user_id, plan, expires_at, payment_id, created_at FROM subscriptions ORDER BY created_at DESC") as cur:
+            async with db.execute("SELECT * FROM subscriptions") as cur:
                 rows = await cur.fetchall()
                 result['subscriptions'] = [dict(r) for r in rows]
-            async with db.execute("SELECT user_id, plan, amount, payment_id, status, created_at FROM payments ORDER BY created_at DESC LIMIT 20") as cur:
+            async with db.execute("SELECT * FROM payments ORDER BY id DESC LIMIT 20") as cur:
                 rows = await cur.fetchall()
                 result['payments'] = [dict(r) for r in rows]
     except Exception as e:
