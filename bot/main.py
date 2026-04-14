@@ -338,6 +338,41 @@ async def subscription_status_handler(request):
             headers={"Access-Control-Allow-Origin": "*"}
         )
 
+
+async def admin_fix_sub_handler(request):
+    """Временный endpoint для ручного добавления подписки"""
+    try:
+        user_id = int(request.rel_url.query.get('user_id', 0))
+        plan_key = request.rel_url.query.get('plan', '1m')
+        secret = request.rel_url.query.get('secret', '')
+        if secret != 'zub2026fix' or not user_id:
+            return web.Response(text='forbidden', status=403)
+        from bot.config import SUBSCRIPTION_PLANS
+        from bot.database import create_or_update_subscription
+        from datetime import datetime, timedelta
+        plan = SUBSCRIPTION_PLANS[plan_key]
+        expires_at = datetime.now() + timedelta(days=plan['days'])
+        await create_or_update_subscription(user_id, '', plan_key, expires_at, f'manual_{user_id}')
+        # Отправляем новый инвайт
+        invite = await bot.create_chat_invite_link(
+            chat_id=CHANNEL_ID,
+            member_limit=1,
+            expire_date=int(expires_at.timestamp()),
+            name=f'fix_{user_id}'
+        )
+        await bot.send_message(
+            chat_id=user_id,
+            text=(
+                f"✅ <b>Подписка активирована!</b>\n\n"
+                f"📋 Тариф: {plan['name']}\n"
+                f"📅 До: {expires_at.strftime('%d.%m.%Y')}\n\n"
+                f"🔗 Ссылка для входа в канал:\n{invite.invite_link}"
+            )
+        )
+        return web.Response(text=f'OK: sub created for {user_id}, plan={plan_key}, expires={expires_at}')
+    except Exception as e:
+        return web.Response(text=f'ERROR: {e}', status=500)
+
 def main():
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
@@ -348,6 +383,7 @@ def main():
     app.router.add_get("/webapp/stats", stats_handler)
     app.router.add_post("/webapp/check_payment", check_payment_handler)
     app.router.add_get("/webapp/subscription", subscription_status_handler)
+    app.router.add_get("/admin/fix_sub", admin_fix_sub_handler)
     app.router.add_post("/yoomoney/notify", yoomoney_notify_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
