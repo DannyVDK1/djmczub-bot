@@ -348,6 +348,94 @@ for(var i=0;i<24;i++){
   b.style.animationDelay=(i*0.04).toFixed(2)+'s';
   if(eq)eq.appendChild(b);
 }
+
+function setActiveNav(tab){
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.remove('active');
+    var lbl=el.querySelector('.nav-label');
+    if(lbl)lbl.style.color='#444441';
+  });
+  var a=document.getElementById('nav-'+tab);
+  if(a){a.classList.add('active');var lbl=a.querySelector('.nav-label');if(lbl)lbl.style.color='#D85A30';}
+}
+
+function goHome(){
+  showScreen('screen-home');
+  setActiveNav('home');
+  window.scrollTo(0,0);
+}
+
+function goMySub(){
+  showScreen('screen-mysub');
+  setActiveNav('sub');
+  window.scrollTo(0,0);
+  loadSubStatus();
+}
+
+function loadSubStatus(){
+  var loading=document.getElementById('sub-content-loading');
+  var active=document.getElementById('sub-content-active');
+  var empty=document.getElementById('sub-content-empty');
+  if(loading)loading.style.display='block';
+  if(active)active.style.display='none';
+  if(empty)empty.style.display='none';
+
+  if(!userId){
+    if(loading)loading.style.display='none';
+    if(empty)empty.style.display='block';
+    return;
+  }
+
+  fetch('/webapp/subscription?user_id='+userId)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(loading)loading.style.display='none';
+      if(!data.active){if(empty)empty.style.display='block';return;}
+      if(active)active.style.display='block';
+
+      var planNames={'1m':'1 месяц','3m':'3 месяца','6m':'6 месяцев','12m':'12 месяцев'};
+      var planPrices={'1m':'149 ₽','3m':'357 ₽','6m':'591 ₽','12m':'894 ₽'};
+      var planDays={'1m':30,'3m':90,'6m':180,'12m':365};
+
+      var pn=document.getElementById('sub-plan-name');
+      var sp=document.getElementById('sub-price');
+      var se=document.getElementById('sub-expires');
+      var sdl=document.getElementById('sub-days-left');
+      var spf=document.getElementById('sub-progress-fill');
+      var spct=document.getElementById('sub-pct');
+      var badge=document.getElementById('sub-status-badge');
+      var ssd=document.getElementById('sub-start-date');
+      var sed=document.getElementById('sub-end-date');
+
+      if(pn)pn.textContent=planNames[data.plan]||data.plan;
+      if(sp)sp.textContent=planPrices[data.plan]||'—';
+
+      var expires=new Date(data.expires_at);
+      var now=new Date();
+      var daysLeft=Math.max(0,Math.round((expires-now)/86400000));
+      var totalDays=planDays[data.plan]||30;
+      var pct=Math.max(0,Math.min(100,Math.round(daysLeft/totalDays*100)));
+
+      if(se)se.textContent=expires.toLocaleDateString('ru-RU');
+      if(sdl)sdl.textContent=daysLeft+' дн.';
+      if(spf)spf.style.width=pct+'%';
+      if(spct)spct.textContent=pct+'%';
+
+      var startDate=new Date(expires.getTime()-totalDays*86400000);
+      if(ssd)ssd.textContent=startDate.toLocaleDateString('ru-RU');
+      if(sed)sed.textContent=expires.toLocaleDateString('ru-RU');
+
+      if(badge){
+        if(daysLeft>7){badge.textContent='Активна';badge.className='sub-status-badge active';if(sdl)sdl.style.color='#1D9E75';}
+        else if(daysLeft>0){badge.textContent='Скоро истекает';badge.className='sub-status-badge warning';if(sdl)sdl.style.color='#D85A30';}
+        else{badge.textContent='Истекла';badge.className='sub-status-badge expired';}
+      }
+    })
+    .catch(function(){
+      if(loading)loading.style.display='none';
+      if(empty)empty.style.display='block';
+    });
+}
 </script>
 
 <!-- Экран: Моя подписка -->
