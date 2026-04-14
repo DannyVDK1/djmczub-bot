@@ -497,6 +497,7 @@ def main():
     app.router.add_post("/yoomoney/notify", yoomoney_notify_handler)
     app.router.add_get("/webapp/", serve_webapp)
     app.router.add_get("/webapp", serve_webapp)
+    app.router.add_get("/admin/clean_invites", admin_clean_invites_handler)
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
